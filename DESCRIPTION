@@ -1,0 +1,27 @@
+Package: rearrvisr
+Title: Detect, Classify, and Visualize Genome Rearrangements
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Doro",
+           family = "Lindtke",
+           role = c("aut", "cre"),
+           email = "doro.lindtke@gmail.com")
+Description: Localize rearrangements (i.e., disturbances in marker order) along 
+    a focal genome relative to a compared genome, and classify them as 
+    inversions, interchromosomal or intrachromosomal translocations. The 
+    compared genome can be an ancestral genome reconstruction or an extant 
+    genome. Rearrangements, breakpoints, and synteny blocks are output 
+    in a tabular format and can be visualized by two graphical functions along 
+    the focal genome, or be utilized for further custom analyses.
+URL: http://github.com/dorolin/rearrvisr
+BugReports: http://github.com/dorolin/rearrvisr/issues
+Depends: R (>= 3.5)
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Suggests: 
+    knitr (>= 1.20),
+    rmarkdown (>= 1.10),
+    testthat (>= 2.0)
+VignetteBuilder: knitr
