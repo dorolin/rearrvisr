@@ -389,10 +389,10 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
         if(sum(tmpS)+sum(tmpE)>0){
             brpts<-getBreakpnts2BP(tmpS,tmpE,markers$start[mpos],
                                    markers$end[mpos],remThld)
-        }
-        if(nrow(brpts)>0){
-            segments(x0=brpts$bpt,x1=brpts$bpt,
-                     y0=myy+0.5,y1=myy+1,col="red",lwd=0.7)
+            if(nrow(brpts)>0){
+                segments(x0=brpts$bpt,x1=brpts$bpt,
+                         y0=myy+0.5,y1=myy+1,col="red",lwd=0.7)
+            }
         }
         ## IV
         tmp<-summarizeTags(SYNT$IV[mpos,],mpos,
