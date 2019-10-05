@@ -37,8 +37,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r load-all, include = FALSE, message=FALSE}
-devtools::load_all(".")
-##library(rearrvisr)
+##devtools::load_all(".")
+library(rearrvisr)
 ```
 
 \newpage
