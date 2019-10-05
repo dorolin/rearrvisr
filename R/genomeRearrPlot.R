@@ -45,7 +45,10 @@
 #' @param uniqueCarColor Logical. If \code{TRUE}, CARs are uniquely colored
 #'   across all focal genome segments. If \code{FALSE}, CARs are colored
 #'   separately for each focal genome segment based on the number of markers per
-#'   CAR.
+#'   CAR (forces \code{sortColsBySize = TRUE}).
+#' @param sortColsBySize Logical. If \code{TRUE}, \code{carColors} and
+#'   \code{carTextColors} are assigned based on the number of markers per CAR,
+#'   so that the first color is allocated to the largest CAR.
 #' @param plotelem A numerical vector of the form \code{c(nor, bid, bor, eid,
 #'   rea)} that determines which synteny block information is visualized.
 #'   \code{nor} is the alignment orientation of the node, \code{bid} is the
@@ -105,9 +108,10 @@
 #' \code{makepdf = FALSE} and \code{newdev = FALSE} will allow to specify
 #' alternative, user-defined dimensions of the graphic. See examples below.
 #'
-#' Colors are assigned to CARs by size. When \code{carColors = NULL}, 47 easily
-#' distinguishable default colors are used for coloring CARs. The first 14
-#' colors are color blindness friendly and were obtained from
+#' Colors are assigned to CARs by size, unless \code{sortColsBySize = FALSE}.
+#' When \code{carColors = NULL}, 47 easily distinguishable default colors are
+#' used for coloring CARs. The first 14 colors are color blindness friendly and
+#' were obtained from
 #' \href{http://mkweb.bcgsc.ca/biovis2012}{mkweb.bcgsc.ca/biovis2012}.
 #' \code{carTextColors} are either black or white dependent on the hue of the
 #' default \code{carColors}.
@@ -194,7 +198,7 @@
 #'   parsimonious to have changed position relative to alternative blocks are
 #'   plotted. If \code{simplifyTags = FALSE}, all tags for TLWS and TLWC will be
 #'   plotted for completeness, i.e., including those that are duplicated due to
-#'   the algorithm in \code{\link{computeRearrs}}.
+#'   the functioning of the underlying algorithm in \code{\link{computeRearrs}}.
 #'
 #' @seealso \code{\link{checkInfile}}, \code{\link{computeRearrs}},
 #'   \code{\link{summarizeBlocks}}, \code{\link{genomeImagePlot}}. For more
@@ -247,6 +251,7 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
                           pad = 0,
                           y0pad = 5,
                           uniqueCarColor = TRUE,
+                          sortColsBySize = TRUE,
                           plotelem = c(1,1,1,1,1),
                           simplifyTags = TRUE,
                           blockwidth = 1,
@@ -309,8 +314,11 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
     if(length(uniqueCarColor) != 1 | !is.logical(uniqueCarColor)){
         stop("uniqueCarColor must be 'TRUE' or 'FALSE'")
     }
+    if(length(sortColsBySize) != 1 | !is.logical(sortColsBySize)){
+        stop("sortColsBySize must be 'TRUE' or 'FALSE'")
+    }
     if(length(plotelem) != 5 | !is.vector(plotelem) | !is.numeric(plotelem)){
-        stop("plotelem must be a numeric vector of length four")
+        stop("plotelem must be a numeric vector of length five")
     }
     if(sum(plotelem != 0 & plotelem != 1) > 0){
         stop("values of plotelem need to be 0 or 1")
@@ -489,7 +497,11 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
         carTextColors<-c(mytextcolors,mytextcolorsB)
     }
 
-    mycarsall<-sort(table(compgenome$car),decreasing=TRUE)
+    if(sortColsBySize==TRUE){
+        mycarsall<-sort(table(compgenome$car),decreasing=TRUE)
+    }else{
+        mycarsall<-table(compgenome$car)
+    }
     mycarsall<-as.numeric(names(mycarsall))
 
     if(uniqueCarColor==TRUE){

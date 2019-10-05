@@ -54,10 +54,10 @@ A list of matrices that store data on different classes of
   of these classes of rearrangements.
 
   Each rearrangement is represented by a separate column. Except for
-  \code{TLBS}, which are identified across focal segments, columns for
+  \code{TLBS}, which are identified across all focal segments, columns for
   individual focal segments are joined across rows to save space (i.e., for
   \code{TLWS}, \code{TLWC}, and \code{IV}, which are identified within focal
-  segments). To preserve the tabular format, these matrices are filled by
+  segments). To preserve the tabular format, these matrices are padded by
   zeros for focal segments with a non-maximal number of rearrangements, if
   necessary. If no rearrangements were detected for a certain class, the
   matrix has zero columns. Markers that are part of a rearrangement have a
@@ -68,9 +68,9 @@ A list of matrices that store data on different classes of
   component (i.e., when alternative sets of markers may have caused an
   apparent translocation). Note that some columns in \code{$TLWS} or
   \code{$TLWC} may be duplicated for a particular focal segment due to the
-  underlying algorithm in \code{\link{computeRearrs}}; although corresponding
-  to the same rearrangement, these duplicated columns are nevertheless
-  included for completeness.
+  functioning of the underlying algorithm; although corresponding to the
+  same rearrangement, these duplicated columns are nevertheless included for
+  completeness.
 
   For \code{TLBS}, markers part of a translocation have a value of \code{0.5}
   if non of the involved CAR fragments is a focal segment - CAR fragment
@@ -131,6 +131,10 @@ A list of matrices that store data on different classes of
   The returned data can be visualized with the \code{\link{genomeImagePlot}}
   function, or summarized and visualized with the
   \code{\link{summarizeBlocks}} and \code{\link{genomeRearrPlot}} functions.
+  The returned rearrangements can be filtered by size with the
+  \code{\link{filterRearrs}} function. Breakpoint coordinates of
+  rearrangements can be extracted with the \code{\link{getBreakpoints}}
+  function.
 }
 \description{
 Detect and classify rearrangements along a focal genome relative to an
@@ -195,6 +199,13 @@ ancestral genome reconstruction or an extant genome
   argument in the \code{genomeImagePlot} and \code{renomeRearrPlot} functions
   accordingly.
 }
+\section{Algorithm}{
+
+
+  A detailed description of the implemented algorithm can be found in the
+  Supplementary information of the manuscript associated with the package
+}
+
 \section{References}{
 
 
@@ -229,7 +240,8 @@ TOY24_compgenome
 
 }
 \seealso{
-\code{\link{genomeImagePlot}}, \code{\link{summarizeBlocks}},
+\code{\link{filterRearrs}}, \code{\link{genomeImagePlot}},
+  \code{\link{getBreakpoints}}, \code{\link{summarizeBlocks}},
   \code{\link{genomeRearrPlot}}; \code{\link{orderGenomeMap}} to order the
   \code{focalgenome} data frame; \code{\link{convertPQtree}} or
   \code{\link{genome2PQtree}} to generate the \code{compgenome} data frame.

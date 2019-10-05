@@ -70,11 +70,7 @@ getBreakpnts2BP<-function(bptS,bptE,startpos,endpos,remThld=0){
     brptsE<-matrix(NA,nrow=0,ncol=3)
     if(ncol(bptS)>0){
         allS<-apply(bptS,1,max)
-        if(remThld>0){
-            allS[allS<=remThld]<-0
-            allS[allS>=1-remThld]<-1
-        }
-        posS<-which(allS>0)
+        posS<-which(allS>remThld)
         if(length(posS)){
             ## tag starting breakpoints
             for(n in 1:length(posS)){
@@ -94,11 +90,7 @@ getBreakpnts2BP<-function(bptS,bptE,startpos,endpos,remThld=0){
     }
     if(ncol(bptE)>0){
         allE<-apply(bptE,1,max)
-        if(remThld>0){
-            allE[allE<=remThld]<-0
-            allE[allE>=1-remThld]<-1
-        }
-        posE<-which(allE>0)
+        posE<-which(allE>remThld)
         if(length(posE)){
             ## tag ending breakpoints
             for(n in 1:length(posE)){
@@ -133,7 +125,8 @@ getBreakpnts2BP<-function(bptS,bptE,startpos,endpos,remThld=0){
     brpts<-brpts[order(brpts[,1],brpts[,2]),]
 
     ## get midpoint in base pairs
-    brpts<-data.frame(bpt=apply(brpts[,1:2],1,mean),val=brpts[,3])
+    brpts<-data.frame(bptmid=apply(brpts[,1:2],1,mean),
+                      bptmin=brpts[,1],bptmax=brpts[,2],maxtagval=brpts[,3])
 
     return(brpts)
 }

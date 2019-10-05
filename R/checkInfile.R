@@ -292,8 +292,21 @@ checkInfile<-function(myobject, myclass, checkorder = NULL){
             if(!is.matrix(myobject[[i]])){
                 stop(paste0(myclass,"$",names(myobject)[i]," needs to be a matrix"))
             }
-            if(sum(rownames(myobject[[i]]) != rownames(myobject$TLWC))>0){
-                stop(paste("rownames in",myclass,"differ"))
+            if(names(myobject)[i]=="filter"){
+                if(colnames(myobject[[i]])[1] != "filterMin" |
+                   colnames(myobject[[i]])[2] != "filterMax"){
+                    stop(paste("list object 'filter' in",myclass,"requires columns\n    'filterMin' and 'filterMax'"))
+                }
+                if(nrow(myobject[[i]]) != 4){
+                    stop(paste("list object 'filter' in",myclass,"does not contain four rows"))
+                }
+                if(!(is.numeric(myobject[[i]]) | sum(is.na(myobject[[i]]))==6)){
+                    stop(paste("list object 'filter' in",myclass,"needs to be a numeric matrix"))
+                }
+            }else{
+                if(sum(rownames(myobject[[i]]) != rownames(myobject$TLWC))>0){
+                    stop(paste("rownames in",myclass,"differ"))
+                }
             }
         }
         if(anyDuplicated(rownames(myobject$TLWC)) > 0){

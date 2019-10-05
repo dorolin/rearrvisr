@@ -18,6 +18,24 @@
 #'   \code{$elem3} \tab node element at third level of \emph{PQ-tree} \cr
 #' }
 #' @seealso \code{\link{computeRearrs}}, \code{\link{TOY24_focalgenome}}
+#'
+#' @examples
+#' \dontrun{
+#'
+#' ## recreate the data set
+#' TOY24_rawtree <- matrix(
+#'   c(">TOY",
+#'     "#CAR1",
+#'     "_Q 1 2 3 4 5 -6 7 8 Q_",
+#'     "#CAR2",
+#'     "_Q 9 _Q 10 Q_ _Q 11 12 13 Q_ Q_",
+#'     "#CAR3",
+#'     "_Q 14 Q_",
+#'     "#CAR4",
+#'     "_Q _P 15 16 17 18 P_ _Q _Q -19 20 21 Q_ _Q -22 -23 24 Q_ Q_ Q_"),
+#'   nrow = 9)
+#' TOY24_compgenome <- convertPQtree(TOY24_rawtree)
+#' }
 "TOY24_compgenome"
 
 #' \code{focalgenome} example for 24 markers, created for illustrative purposes
@@ -35,6 +53,24 @@
 #'   \code{$strand} \tab reading direction of marker \cr
 #' }
 #' @seealso \code{\link{computeRearrs}}, \code{\link{TOY24_compgenome}}
+#'
+#' @examples
+#' \dontrun{
+#'
+#' ## recreate the data set
+#' TOY24_focalgenome <- data.frame(
+#'   marker = as.integer(c(1,7,2,6:4,8:10,3,13:11,14,17:15,18,21,20,22:24,19)),
+#'   scaff = as.character(rep(c(1,2,3), times = c(7,11,6))),
+#'   start = as.integer(c(seq(10^6, by = 10^6, length.out = 7),
+#'                        seq(10^6, by = 10^6, length.out = 11),
+#'                        seq(10^6, by = 10^6, length.out = 6))),
+#'   end = as.integer(c(seq(10^6+2, by = 10^6, length.out = 7),
+#'                      seq(10^6+2, by = 10^6, length.out = 11),
+#'                      seq(10^6+2, by = 10^6, length.out = 6))),
+#'   strand = rep(rep(c("+", "-"), 4),
+#'                times = c(4,2,4,3,8,1,1,1)),
+#'   stringsAsFactors = FALSE)
+#' }
 "TOY24_focalgenome"
 
 

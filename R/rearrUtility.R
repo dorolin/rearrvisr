@@ -2141,6 +2141,11 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
             ## potentially adjust tags in TLL$TLbetween
             ##  (set best hits to zero and tag fragments of CAR on other
             ##   scaffolds with 1.0 instead of 0.5 [division by 2 below])
+            ## >>>> Note that this will remove tags for multiple
+            ##      scaffolds if the CAR has a best hit on more than
+            ##      one scaffold. Although this might appear incorrect,
+            ##      it is required to avoid that huge parts of some
+            ##      scaffolds are tagged; see note in 'getBestHits()'
             if(length(toMod)>0){
                 for(i in 1:length(toMod)){
                     TLL$TLbetween[myset,toMod[i]]<-0
@@ -2159,6 +2164,7 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
     }
 
     SYNT$TLBS<-TLL$TLbetween/2
+
 
     rownames(SYNT$TLWS)<-rownames(TLL$TLwithin)
     rownames(SYNT$TLWSbS)<-rownames(TLL$TLwithin)
@@ -2288,6 +2294,26 @@ getBestHits<-function(markers,tree,myscafs,mycars){
 
     ## combine matrices, giving weights
     scafcarbestS<-pmax(scafcarbest*3,bestscaf*2,bestcar)
+
+    ## ## make sure that no car has more than one scaffold assigned
+    ## ## (it's okay if a scaffold has multiple cars assigned)
+    ## ## >>>> Note that this can potentially lead to tagging of
+    ## ##      a huge part of a scaffold as TLBS if a car merges
+    ## ##      two scaffolds but it just happened that there were
+    ## ##      small translocations of other cars at the scaffold ends
+    ## ##      so that they cannot be joined; has to be addressed
+    ## ##      together with the tests in 'filterCars3()'
+    ## for(i in 1:length(mycars)){
+    ##     if(sum(scafcarbestS[,i]>0)>1){
+    ##         tmp<-which(scafcarbestS[,i]==max(scafcarbestS[,i]))
+    ##         if(length(tmp)>1){
+    ##             ## set to zero (admitting that there is no easy solution)
+    ##             scafcarbestS[,i]<-0
+    ##         }else{
+    ##             scafcarbestS[-tmp,i]<-0
+    ##         }
+    ##     }
+    ## }
 
     return(scafcarbestS)
 }
@@ -4686,13 +4712,23 @@ getBreakpntsSE<-function(submat){
             bstart<-which(diff(c(0,submat[,i]))!=0)
             bend<-which(diff(c(submat[,i],0))!=0)
 
+            ## if(length(bstart)>0){
+            ##     bptS<-cbind(bptS,numeric(nrow(submat)))
+            ##     bptS[bstart,ncol(bptS)]<-submat[bstart,i]
+            ## }
+            ## if(length(bend)>0){
+            ##     bptE<-cbind(bptE,numeric(nrow(submat)))
+            ##     bptE[bend,ncol(bptE)]<-submat[bend,i]
+            ## }
+            ## >>> changed here to make sure that dimension of matrix with
+            ##     breakpoints corresponds to matrix with tag values
+            bptS<-cbind(bptS,numeric(nrow(submat)))
             if(length(bstart)>0){
-                bptS<-cbind(bptS,numeric(nrow(submat)))
-                bptS[bstart,ncol(bptS)]<-submat[bstart,i]
+                bptS[bstart,i]<-submat[bstart,i]
             }
+            bptE<-cbind(bptE,numeric(nrow(submat)))
             if(length(bend)>0){
-                bptE<-cbind(bptE,numeric(nrow(submat)))
-                bptE[bend,ncol(bptE)]<-submat[bend,i]
+                bptE[bend,i]<-submat[bend,i]
             }
         }
     }

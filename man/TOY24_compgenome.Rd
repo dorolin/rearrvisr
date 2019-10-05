@@ -25,6 +25,24 @@ A data set illustrating a compared (ancestral or extant) genome
 representation with 24 markers on four \emph{Contiguous Ancestral Regions}
 (CARs), where each CAR is represented by a \emph{PQ-tree}.
 }
+\examples{
+\dontrun{
+
+## recreate the data set
+TOY24_rawtree <- matrix(
+  c(">TOY",
+    "#CAR1",
+    "_Q 1 2 3 4 5 -6 7 8 Q_",
+    "#CAR2",
+    "_Q 9 _Q 10 Q_ _Q 11 12 13 Q_ Q_",
+    "#CAR3",
+    "_Q 14 Q_",
+    "#CAR4",
+    "_Q _P 15 16 17 18 P_ _Q _Q -19 20 21 Q_ _Q -22 -23 24 Q_ Q_ Q_"),
+  nrow = 9)
+TOY24_compgenome <- convertPQtree(TOY24_rawtree)
+}
+}
 \seealso{
 \code{\link{computeRearrs}}, \code{\link{TOY24_focalgenome}}
 }

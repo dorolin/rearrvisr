@@ -40,6 +40,11 @@
 #'   one-dimensional genome map, and the compared genome as a two-dimensional
 #'   \emph{PQ-structure}.
 #'
+#'   \item \code{\link{filterRearrs}} filters detected rearrangements by their
+#'   size.
+#'
+#'   \item \code{\link{getBreakpoints}} extracts breakpoint coordinates.
+#'
 #'   \item \code{\link{summarizeBlocks}} summarizes rearrangements and
 #'   information on the alignment between the focal genome and the compared
 #'   genome for each synteny block.

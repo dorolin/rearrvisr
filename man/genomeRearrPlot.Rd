@@ -6,8 +6,8 @@
 \usage{
 genomeRearrPlot(BLOCKS, compgenome, ordfocal, remstr = "", main = "",
   remThld = 0.05, mar = NULL, pad = 0, y0pad = 5,
-  uniqueCarColor = TRUE, plotelem = c(1, 1, 1, 1, 1),
-  simplifyTags = TRUE, blockwidth = 1, yaxlab = NULL,
+  uniqueCarColor = TRUE, sortColsBySize = TRUE, plotelem = c(1, 1, 1,
+  1, 1), simplifyTags = TRUE, blockwidth = 1, yaxlab = NULL,
   carColors = NULL, carTextColors = NULL, cex.main = 2,
   cex.axis = 1.2, cex.text = 1, font.main = 3, makepdf = FALSE,
   newdev = TRUE, filename = "rearr.pdf", colormodel = "srgb")
@@ -59,7 +59,11 @@ thus to be invisible in the plot).}
 \item{uniqueCarColor}{Logical. If \code{TRUE}, CARs are uniquely colored
 across all focal genome segments. If \code{FALSE}, CARs are colored
 separately for each focal genome segment based on the number of markers per
-CAR.}
+CAR (forces \code{sortColsBySize = TRUE}).}
+
+\item{sortColsBySize}{Logical. If \code{TRUE}, \code{carColors} and
+\code{carTextColors} are assigned based on the number of markers per CAR,
+so that the first color is allocated to the largest CAR.}
 
 \item{plotelem}{A numerical vector of the form \code{c(nor, bid, bor, eid,
 rea)} that determines which synteny block information is visualized.
@@ -186,7 +190,7 @@ A plot to the default graphics device (but not "RStudioGD") or a PDF
   parsimonious to have changed position relative to alternative blocks are
   plotted. If \code{simplifyTags = FALSE}, all tags for TLWS and TLWC will be
   plotted for completeness, i.e., including those that are duplicated due to
-  the algorithm in \code{\link{computeRearrs}}.
+  the functioning of the underlying algorithm in \code{\link{computeRearrs}}.
 }
 \description{
 Generate a plot that shows synteny blocks between a focal and a compared
@@ -208,9 +212,10 @@ graphics device to one that has inches as default units. Setting both
 \code{makepdf = FALSE} and \code{newdev = FALSE} will allow to specify
 alternative, user-defined dimensions of the graphic. See examples below.
 
-Colors are assigned to CARs by size. When \code{carColors = NULL}, 47 easily
-distinguishable default colors are used for coloring CARs. The first 14
-colors are color blindness friendly and were obtained from
+Colors are assigned to CARs by size, unless \code{sortColsBySize = FALSE}.
+When \code{carColors = NULL}, 47 easily distinguishable default colors are
+used for coloring CARs. The first 14 colors are color blindness friendly and
+were obtained from
 \href{http://mkweb.bcgsc.ca/biovis2012}{mkweb.bcgsc.ca/biovis2012}.
 \code{carTextColors} are either black or white dependent on the hue of the
 default \code{carColors}.

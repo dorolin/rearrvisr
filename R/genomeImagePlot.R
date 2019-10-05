@@ -9,7 +9,8 @@
 #'
 #' @param SYNT A list of matrices that store data on different classes of
 #'   rearrangements and additional information. \code{SYNT} must have been
-#'   generated with the \code{\link{computeRearrs}} function.
+#'   generated with the \code{\link{computeRearrs}} function (optionally
+#'   filtered with the \code{\link{filterRearrs}} function).
 #' @param focalgenome Data frame representing the focal genome, containing the
 #'   mandatory columns \code{$marker}, \code{$scaff}, \code{$start},
 #'   \code{$end}, and \code{$strand}, and optional further columns. Markers need
@@ -126,7 +127,8 @@
 #'   rearrangements versus multiple short adjacent rearrangements, it may be
 #'   helpful to take the position of breakpoints into account.
 #'
-#' @seealso \code{\link{computeRearrs}}, \code{\link{genomeRearrPlot}}. For more
+#' @seealso \code{\link{computeRearrs}}, \code{\link{filterRearrs}},
+#'   \code{\link{getBreakpoints}}, \code{\link{genomeRearrPlot}}. For more
 #'   information about arguments that are passed to other functions, see
 #'   \code{\link[grDevices]{dev.new}}, \code{\link[grDevices]{pdf}},
 #'   \code{\link[graphics]{plot}}, \code{\link[graphics]{par}}.
@@ -386,11 +388,11 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
                     SYNT$TLWSbS[mpos,],SYNT$TLBSbS[mpos,])
         tmpE<-cbind(SYNT$IVbE[mpos,],SYNT$TLWCbE[mpos,],
                     SYNT$TLWSbE[mpos,],SYNT$TLBSbE[mpos,])
-        if(sum(tmpS)+sum(tmpE)>0){
+        if(sum(tmpS)>remThld | sum(tmpE)>remThld){
             brpts<-getBreakpnts2BP(tmpS,tmpE,markers$start[mpos],
                                    markers$end[mpos],remThld)
             if(nrow(brpts)>0){
-                segments(x0=brpts$bpt,x1=brpts$bpt,
+                segments(x0=brpts$bptmid,x1=brpts$bptmid,
                          y0=myy+0.5,y1=myy+1,col="red",lwd=0.7)
             }
         }

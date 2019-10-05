@@ -13,7 +13,8 @@ genomeImagePlot(SYNT, focalgenome, ordfocal, remstr = "", main = "",
 \arguments{
 \item{SYNT}{A list of matrices that store data on different classes of
 rearrangements and additional information. \code{SYNT} must have been
-generated with the \code{\link{computeRearrs}} function.}
+generated with the \code{\link{computeRearrs}} function (optionally
+filtered with the \code{\link{filterRearrs}} function).}
 
 \item{focalgenome}{Data frame representing the focal genome, containing the
 mandatory columns \code{$marker}, \code{$scaff}, \code{$start},
@@ -193,7 +194,8 @@ dev.off()
 
 }
 \seealso{
-\code{\link{computeRearrs}}, \code{\link{genomeRearrPlot}}. For more
+\code{\link{computeRearrs}}, \code{\link{filterRearrs}},
+  \code{\link{getBreakpoints}}, \code{\link{genomeRearrPlot}}. For more
   information about arguments that are passed to other functions, see
   \code{\link[grDevices]{dev.new}}, \code{\link[grDevices]{pdf}},
   \code{\link[graphics]{plot}}, \code{\link[graphics]{par}}.

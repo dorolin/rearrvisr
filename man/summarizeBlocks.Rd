@@ -9,7 +9,8 @@ summarizeBlocks(SYNT, focalgenome, compgenome, ordfocal)
 \arguments{
 \item{SYNT}{A list of matrices that store data on different classes of
 rearrangements and additional information. \code{SYNT} must have been
-generated with the \code{\link{computeRearrs}} function.}
+generated with the \code{\link{computeRearrs}} function (optionally
+filtered with the \code{\link{filterRearrs}} function).}
 
 \item{focalgenome}{Data frame representing the focal genome, containing the
 mandatory columns \code{$marker}, \code{$scaff}, \code{$start},
@@ -86,14 +87,17 @@ A list of lists that summarizes the alignment between the focal
   their blocks. Each rearrangement is represented by a separate column, and
   blocks that are part of a rearrangement have a tag value of \code{>0}. Note
   that some columns in \code{$TLWS} or \code{$TLWC} may be duplicated due to
-  the underlying algorithm in \code{\link{computeRearrs}}; although
-  corresponding to the same rearrangement, these duplicated columns are
-  nevertheless included for completeness. By default these columns will not
-  be visualized with the \code{\link{genomeRearrPlot}} function. If no
+  the functioning of the underlying algorithm in \code{\link{computeRearrs}};
+  although corresponding to the same rearrangement, these duplicated columns
+  are nevertheless included for completeness. By default these columns will
+  not be visualized with the \code{\link{genomeRearrPlot}} function. If no
   rearrangements were detected for a certain class, the matrix has zero
   columns. See the package vignette or the Value section in the documentation
   of the \code{\link{computeRearrs}} function for details on the meaning of
-  different tag values in these matrices.
+  different tag values in these matrices. Note that if \code{SYNT} has been
+  filtered with the \code{\link{filterRearrs}} function, only the above
+  matrices will be affected, while the information in \code{$blocks} will
+  remain unchanged.
 
   The returned data can be visualized with the \code{\link{genomeRearrPlot}}
   function.
@@ -152,5 +156,5 @@ BLOCKS[[1]]
 }
 \seealso{
 \code{\link{checkInfile}}, \code{\link{computeRearrs}},
-  \code{\link{genomeRearrPlot}}.
+  \code{\link{filterRearrs}}, \code{\link{genomeRearrPlot}}.
 }

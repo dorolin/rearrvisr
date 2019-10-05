@@ -20,6 +20,24 @@ TOY24_focalgenome
 A data set illustrating a focal (extant) genome map with 24 markers on three
 genome segments (e.g., scaffolds).
 }
+\examples{
+\dontrun{
+
+## recreate the data set
+TOY24_focalgenome <- data.frame(
+  marker = as.integer(c(1,7,2,6:4,8:10,3,13:11,14,17:15,18,21,20,22:24,19)),
+  scaff = as.character(rep(c(1,2,3), times = c(7,11,6))),
+  start = as.integer(c(seq(10^6, by = 10^6, length.out = 7),
+                       seq(10^6, by = 10^6, length.out = 11),
+                       seq(10^6, by = 10^6, length.out = 6))),
+  end = as.integer(c(seq(10^6+2, by = 10^6, length.out = 7),
+                     seq(10^6+2, by = 10^6, length.out = 11),
+                     seq(10^6+2, by = 10^6, length.out = 6))),
+  strand = rep(rep(c("+", "-"), 4),
+               times = c(4,2,4,3,8,1,1,1)),
+  stringsAsFactors = FALSE)
+}
+}
 \seealso{
 \code{\link{computeRearrs}}, \code{\link{TOY24_compgenome}}
 }
