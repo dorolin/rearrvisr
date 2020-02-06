@@ -22,7 +22,12 @@
 ##     inversions into account for decision which part has been
 ##     rearranged
 ##   - with duplicated elements: follow up on the idea of defining
-##     "premasks" before making blocks
+##     "premasks" before making blocks [!!! having changed to use
+##     'checkAdjComplexRearr()' function in 'tagTP2()' is likely to
+##     be incompatible with using premasks without adding
+##     appropriate adjustements]
+##   - 'assignOri3()' and 'checkAdjAscend()' and 'checkAdjDescend()'
+##     could be simplified when using new 'checkAdjComplexRearr()'
 ## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -97,7 +102,11 @@ getSingles<-function(tree){
 
 ## additional processing transpositions (TPs)
 tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
-                 testorientation,preMasks,splitnodes,remWgt=0.05){
+                 testorientation,preMasks,splitnodes,remWgt=0.05,
+                 testlim=100){
+
+    ## >>> don't use preMasks, this will require new adjustements
+    ##     after adding 'checkAdjComplexRearr()' function
 
     ## synt has dimension of subtree
     ## leaves, testorientation, tmprows have dimension of markers
@@ -196,7 +205,7 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         ## identify blocks of elements that are in order
         rankelem<-myRank(allelem)
 
-        ## store splitblockid (if TP not IV in 'checkOriAscend'/'checkOriDescend')
+        ## store splitblockid (if TP in 'checkOriAscend'/'checkOriDescend')
         splitblockid<-rep("",length(allelem))
 
         ## get vector of duplicated elements (TPelem=1)
@@ -215,278 +224,22 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         }
 
 
-        ## in the presence of duplications, determine node order
-        ##  based on pre-determined masked / non-masked elements
-        if(length(dupli)>0){
-
-            ## make blocks incorporting pre-masked elements
-            ##  and check adjacencies (using first-order blocks)
-
-            ## -- ascending order
-
-            blocksLA<-vector("list",0)
-            ## blocksLA<-makeBlocks(blocksLA,1:length(allelem),1:length(allelem),
-            ##                      allelem,leafelem,iter=1,tomask=preMasks$A)
-            blocksLA<-makeBlocks(blocksLA,1:length(allelem),1:length(allelem),
-                                 allelem,leafelem,iter=1)
-
-            ## maskLA<-setMasks(blocksLA,allelem,dupli,tomask=preMasks$A)
-            maskLA<-setMasks(blocksLA,allelem,dupli)
-
-            if(nrow(blocksLA[[length(blocksLA)]])>1){
-                blocklevelA<-length(blocksLA)
-            }else{
-                blocklevelA<-length(blocksLA)-1
-            }
-            ## tmptpA<-checkAdjAscend(blocksLA[[blocklevelA]],
-            ##                        maskLA[[blocklevelA]],
-            ##                        length(allelem),usePreMask=TRUE)
-            ## (>>>> when not using setMasks(...,tomask=preMasks$A) above)
-            tmptpA<-checkAdjAscend(blocksLA[[blocklevelA]],
-                                   maskLA[[blocklevelA]],
-                                   length(allelem))
+        ## >>>> removed the distinction between having/not having duplis
+        ##      after adding 'checkAdjComplexRearr()' function
+        ## if(length(dupli)>0){
+        ##     ## in the presence of duplications, determine node order
+        ##     ##  based on pre-determined masked / non-masked elements
+        ## }else{
+        ##     ## no duplications: order determination using function
+        ##     ## (functions nevertheless account for duplicated elements
+        ##     ##   as inherited from code history)
+        ## }
 
 
-            ## -- descending order
-
-            blocksLD<-vector("list",0)
-            ## blocksLD<-makeBlocks(blocksLD,1:length(allelem),1:length(allelem),
-            ##                      allelem,leafelem,iter=1,tomask=preMasks$D)
-            blocksLD<-makeBlocks(blocksLD,1:length(allelem),1:length(allelem),
-                                 allelem,leafelem,iter=1)
-
-            ## maskLD<-setMasks(blocksLD,allelem,dupli,tomask=preMasks$D)
-            maskLD<-setMasks(blocksLD,allelem,dupli)
-
-            if(nrow(blocksLD[[length(blocksLD)]])>1){
-                blocklevelD<-length(blocksLD)
-            }else{
-                blocklevelD<-length(blocksLD)-1
-            }
-            ## tmptpD<-checkAdjDescend(blocksLD[[blocklevelD]],
-            ##                         maskLD[[blocklevelD]],
-            ##                         length(allelem),usePreMask=TRUE)
-            ## (>>>> when not using setMasks(...,tomask=preMasks$D) above)
-            tmptpD<-checkAdjDescend(blocksLD[[blocklevelD]],
-                                    maskLD[[blocklevelD]],
-                                    length(allelem))
-
-
-            ## -- decide for order
-
-
-            ori<-NA
-
-            ## .............................................................
-            ## (>>>> when not using setMasks(...,tomask=preMasks$*) above)
-            ##    when not using 'usePreMask=TRUE' above, decision needs
-            ##       to consider that order with two elements might need
-            ##       to be switched dependent on orientation of these elements
-            ##       (blocksLA and blocksLD made with 'tomask=logical(0)'
-            ##        should be identical)
-            if(nrow(blocksLA[[length(blocksLA)]])==1 &
-               nrow(blocksLD[[length(blocksLD)]])==1 &
-               length(blocksLA)>1 & length(blocksLD)>1){
-                if(nrow(blocksLA[[length(blocksLA)-1]])==2 &
-                   nrow(blocksLD[[length(blocksLD)-1]])==2){
-                    ## final combination of blocks exist and next lower
-                    ##  level has two elements -> use function
-                    oriA<-assignOri3(blocksLA,maskLA,allelem,elemrows,
-                                     leafelem,leaves,testorientation)
-                    oriD<-assignOri3(blocksLD,maskLD,allelem,elemrows,
-                                     leafelem,leaves,testorientation)
-                    if((oriA==1 & oriD==9) |
-                       (oriA==9 & oriD==1) |
-                       (oriA==1 & oriD==1)){
-                        ori<-1
-                    }else if((oriA== -1 & oriD==9) |
-                             (oriA==9 & oriD== -1) |
-                             (oriA== -1 & oriD== -1)){
-                        ori<- -1
-                    }
-                }
-            }
-            ## .............................................................
-            if(is.na(ori)){
-                if(ncol(tmptpA)<ncol(tmptpD)){ ## fewer incorrect adjacencies
-                    ori<-1
-                }else if(ncol(tmptpA)<ncol(tmptpD)){
-                    ori<- -1
-                }else{
-                    if(sum(tmptpA)<sum(tmptpD)){ ## fewer transposed elements
-                        ori<-1
-                    }else if(sum(tmptpA)>sum(tmptpD)){
-                        ori<- -1
-                    }else{ ## use function
-                        oriA<-assignOri3(blocksLA,maskLA,allelem,elemrows,
-                                         leafelem,leaves,testorientation)
-                        oriD<-assignOri3(blocksLD,maskLD,allelem,elemrows,
-                                         leafelem,leaves,testorientation)
-                        if((oriA==1 & oriD==9) |
-                           (oriA==9 & oriD==1) |
-                           (oriA==1 & oriD==1)){
-                            ori<-1
-                        }else if((oriA== -1 & oriD==9) |
-                                 (oriA==9 & oriD== -1) |
-                                 (oriA== -1 & oriD== -1)){
-                            ori<- -1
-                        }else{ ## conflict
-                            ## >>>> might be a better way to do this
-                            ##      but should be okay as approximation
-                            if(allelem[1]<=allelem[length(allelem)]){
-                                ori<-1
-                            }else{
-                                ori<- -1
-                            }
-                        }
-                    }
-                }
-            }
-
-            if(ori==1){
-                blocksL<-blocksLA
-                maskL<-maskLA
-                blocklevel<-blocklevelA
-                tmptp<-tmptpA
-                for(j in 1:length(allelem)){
-                    tmp2<-(elemrows[1,j]):(elemrows[2,j])
-                    ## synt$premask[tmprows[tmp2],n]<-rep(1*preMasks$A[j],
-                    ##                                    length(tmp2))
-                    synt$premask[tmprows[tmp2],n]<-rep(0*preMasks$A[j],
-                                                       length(tmp2))
-                    ## >>>> '0*preMasks$A' is when not using
-                    ##       setMasks(...,tomask=preMasks$A) above
-                }
-            }else{
-                blocksL<-blocksLD
-                maskL<-maskLD
-                blocklevel<-blocklevelD
-                tmptp<-tmptpD
-                for(j in 1:length(allelem)){
-                    tmp2<-(elemrows[1,j]):(elemrows[2,j])
-                    ## synt$premask[tmprows[tmp2],n]<-rep(1*preMasks$D[j],
-                    ##                                    length(tmp2))
-                    synt$premask[tmprows[tmp2],n]<-rep(0*preMasks$D[j],
-                                                       length(tmp2))
-                    ## >>>> '0*preMasks$D' is when not using
-                    ##       setMasks(...,tomask=preMasks$D) above
-                }
-            }
-            synt$nodeori[tmprows,n]<-ori
-
-        }else{ ## no duplications: order determination using function
-            ## (functions nevertheless account for duplicated elements
-            ##   as inherited from code history)
-
-            blocksL<-vector("list",0)
-            blocksL<-makeBlocks(blocksL,1:length(allelem),1:length(allelem),
-                                allelem,leafelem,1)
-
-            maskL<-setMasks(blocksL,allelem,dupli)
-
-            ori<-assignOri3(blocksL,maskL,allelem,elemrows,
-                            leafelem,leaves,testorientation)
-            synt$nodeori[tmprows,n]<-ori
-            synt$premask[tmprows,n]<-0
-
-            ## take into account that there might be just a single
-            ##  block of one element (nrow(blocksL[[1]])==1 & ori==9)
-            ##  or a single block of several elements
-            ##  (nrow(blocksL[[1]])==1 & ori!=9); in both cases,
-            ##  all elements will be in order
-            if(nrow(blocksL[[1]])==1){
-                tmptp<-matrix(NA,ncol=0,nrow=length(allelem))
-                blocklevel<-1
-            }else if(nrow(blocksL[[length(blocksL)]])>1){
-                ## no final block; check adjacencies
-                blocklevel<-length(blocksL)
-                if(ori==1){
-                    tmptp<-checkAdjAscend(blocksL[[blocklevel]],
-                                          maskL[[blocklevel]],
-                                          length(allelem))
-                }else if(ori== -1){
-                    tmptp<-checkAdjDescend(blocksL[[blocklevel]],
-                                           maskL[[blocklevel]],
-                                           length(allelem))
-                }else{
-                    stop("Node has unexpected orientation")
-                }
-            }else{
-                ## final block exists, which can be skipped
-                blocklevel<-length(blocksL)-1
-                if(ori==1){
-                    tmptp<-checkAdjAscend(blocksL[[blocklevel]],
-                                          maskL[[blocklevel]],
-                                          length(allelem))
-                }else if(ori== -1){
-                    tmptp<-checkAdjDescend(blocksL[[blocklevel]],
-                                           maskL[[blocklevel]],
-                                           length(allelem))
-                }else{
-                    stop("Node has unexpected orientation")
-                }
-            }
-        }
-
-        ## if all block elements received a tp tag, adjust so that
-        ##  largest block won't get a tag
-        if(sum(rowSums(tmptp)>=1)==nrow(tmptp)){
-            untag<-integer()
-            ## get block sizes
-            blsize<-integer(nrow(blocksL[[blocklevel]]))
-            for(k in 1:length(blsize)){
-                ## expand block over elements to markers
-                ## get columns in elemrows
-                tmp<-(blocksL[[blocklevel]][k,1]):(blocksL[[blocklevel]][k,2])
-                ## get number of markers
-                for(j in tmp){
-                    blsize[k]<-blsize[k]+diff(elemrows[,j])+1
-                }
-            }
-            untag<-which(blsize==max(blsize))
-            if(length(untag)>1){
-                if(sum(!maskL[[blocklevel]][untag])==1){
-                    ## only one of the largest blocks is unmasked
-                    untag<-untag[!maskL[[blocklevel]][untag]]
-                }else{
-                    ## get number of subblocks
-                    nsubbl<-integer(length(blsize))
-                    for(k in 1:length(blsize)){
-                        nsubbl[k]<-sum(blocksL[[1]][,1]>=blocksL[[blocklevel]][k,1] & blocksL[[1]][,2]<=blocksL[[blocklevel]][k,2])
-                    }
-                    ## get the one(s) with the fewest subblocks
-                    nsubbl<-nsubbl[untag]
-                    untag<-untag[which(nsubbl==min(nsubbl))]
-                }
-            }
-            if(length(untag)==1){
-                ## get row and column in tmptp
-                tagrow<-(blocksL[[blocklevel]][untag,1]):(blocksL[[blocklevel]][untag,2])
-                tagcln<-which(colSums(tmptp[tagrow,,drop=FALSE])==length(tagrow))
-                if(length(tagcln)==1){
-                    tagpos<-tmptp[,tagcln]==1
-                    tmptp[tagpos,tagcln]<-remWgt
-                    ## note: this might remove tags beyond the
-                    ##  boundaries of the largest block (which should
-                    ##  be reasonable as everything tagged within a
-                    ##  column should have correct adjacencies within it)
-                    if(ncol(tmptp)==2){
-                        tagpos<-tmptp[,-tagcln]==1
-                        tmptp[tagpos,-tagcln]<-1-remWgt
-                    }
-                }
-            }else if(length(untag)==2 & ncol(tmptp)==2){
-                ## two blocks, both tagged and of equal size
-                tmptp[tmptp[,1]==1,1]<-0.5
-                tmptp[tmptp[,2]==1,2]<-0.5
-                if(sum(rowSums(tmptp)==0.5)!=nrow(tmptp)){
-                    stop("Tags for transposed blocks are not as they should be")
-                }
-            }
-            ## note: if length(untag)!=1, don't adjust tags,
-            ##  unless only two adjacency sets
-        }
-
+        blocksL<-vector("list",0)
+        blocksL<-makeBlocks(blocksL,1:length(allelem),1:length(allelem),
+                            allelem,leafelem,1)
+        maskL<-setMasks(blocksL,allelem,dupli)
 
         ## store blockid and blockori
         ##  (blockid might be further modified below)
@@ -502,9 +255,15 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
             synt$blockori[tmprows[tmp2],n]<-rep(blocksL[[1]][k,6],
                                                 length(tmp2))
             synt$blockid[tmprows[tmp2],n]<-rep(blocksL[[1]][k,7],
-                                                length(tmp2))
+                                               length(tmp2))
         }
 
+        ## storage for block element orientation
+        ##  (can be overwritten in functions below)
+        blockoriL<-vector("list",length(blocksL))
+        for(z in 1:length(blocksL)){
+            blockoriL[[z]]<-blocksL[[z]][,6]
+        }
 
         ## check for rearrangements:
 
@@ -514,12 +273,11 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         ##   is correct
 
         ## - if no final block combination exists,
-        ##   - tag wrong adjacencies as TPs
-        ##     >>> in presence of duplis, check whether flanks/inserts
-        ##         should be masked prior to adjacency check; then
-        ##         add masked elements and check adjacencies
-        ##         (>>> commented out as it did not work correctly in
-        ##              all tested cases)
+        ##   - use 'keepBlocks()' function to exclude elements that
+        ##     hinder clustering to final block
+        ##   - use 'checkAdjComplexRearr()' function to cluster
+        ##     remaining blocks, make rearrangement tags for them,
+        ##     and to tag excluded elements
         ## - if final block combination exists,
         ##   - tag wrong adjacencies as TPs (adjacencies should always
         ##     be correct if final combination exists, except when
@@ -541,71 +299,196 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         ## - step through the levels of blocks and repeat
 
 
-        ## storage for block element orientation
-        ##  (can be overwritten in functions below)
-        blockoriL<-vector("list",length(blocksL))
-        for(z in 1:length(blocksL)){
-            blockoriL[[z]]<-blocksL[[z]][,6]
-        }
 
-        tmpiv<-matrix(NA,ncol=0,nrow=length(allelem))
+        ## take into account that there might be just a single
+        ##  block of one element (nrow(blocksL[[1]])==1 & ori==9)
+        ##  or a single block of several elements
+        ##  (nrow(blocksL[[1]])==1 & ori!=9); in both cases,
+        ##  all elements will be in order
+        if(nrow(blocksL[[1]])==1){
+            ori<-assignOri3(blocksL,maskL,allelem,elemrows,
+                            leafelem,leaves,testorientation)
+            tmptp<-matrix(NA,ncol=0,nrow=length(allelem))
+            tmpiv<-matrix(NA,ncol=0,nrow=length(allelem))
+            blocklevel<-1
+        }else if(nrow(blocksL[[length(blocksL)]])>1){
+            ## no final block; exclude smallest blocks
+            ##   until final clustering possible
+            tokeep<-keepBlocks(blocksL,maskL,elemrows,
+                               allelem,leafelem,testlim=testlim)
 
-        ## check orientation of blocks
-        if(ori==1){
-            xxx<-checkOriAscend(blocksL,blocklevel,allelem,dupli,
-                                elemrows,leaves,testorientation,blockoriL,
-                                subbl=1:nrow(blocksL[[blocklevel]]),
-                                splitblockid,remWgt=remWgt)
-            ## returns tpElA, ivElA, (modified) blockoriL, splitblockid
-            tmptp<-cbind(tmptp,xxx$tpElA)
-            tmpiv<-cbind(tmpiv,xxx$ivElA)
-            blockoriL<-xxx$blockoriL
+            ## check adjacencies for block clustering done
+            ##   with non-excluded blocks only, and make tags
+            ##   for incorrect adjacencies; also make tags
+            ##   for excluded blocks; ori is identified from
+            ##   clustering of non-excluded blocks
+            xxx<-checkAdjComplexRearr(blocksL,maskL,allelem,elemrows,
+                                      leafelem,leaves,testorientation,
+                                      tokeep,remWgt)
+            ori<-xxx$ori
+            tmptp<-xxx$tmptp
+            tmpiv<-xxx$tmpiv
+            invelem<-xxx$invelem
             splitblockid<-xxx$splitblockid
-            ## keep track of expected orientation of leaves
-            invelem<-rep(0,length(allelem))
-            if(ncol(xxx$ivElA)>0){
-                for(i in 1:ncol(xxx$ivElA)){
-                    newinv<-which(xxx$ivElA[,i]==1 & invelem==0)
-                    backinv<-which(xxx$ivElA[,i]==1 & invelem==1)
-                    if(length(newinv)>0){
-                        invelem[newinv]<-rep(1,length(newinv))
+            expectedOri<-xxx$expectedOri
+            blocklevel<-length(blocksL)
+        }else{
+            ori<-assignOri3(blocksL,maskL,allelem,elemrows,
+                            leafelem,leaves,testorientation)
+            ## final block exists, which can be skipped
+            blocklevel<-length(blocksL)-1
+            if(ori==1){
+                tmptp<-checkAdjAscend(blocksL[[blocklevel]],
+                                      maskL[[blocklevel]],
+                                      length(allelem))
+            }else if(ori== -1){
+                tmptp<-checkAdjDescend(blocksL[[blocklevel]],
+                                       maskL[[blocklevel]],
+                                       length(allelem))
+            }else{
+                stop("Node has unexpected orientation")
+            }
+            ## if all block elements received a tp tag, adjust so that
+            ##  largest block won't get a tag
+            if(sum(rowSums(tmptp)>=1)==nrow(tmptp)){
+                tmptp<-adjustTPtags(tmptp,blocksL[[blocklevel]],
+                                    maskL[[blocklevel]],
+                                    blocksL[[1]],elemrows,remWgt)
+            }
+            tmpiv<-matrix(NA,ncol=0,nrow=length(allelem))
+        }
+        synt$nodeori[tmprows,n]<-ori
+        synt$premask[tmprows,n]<-0
+
+
+        ## === check orientation of blocks (top level) ===
+        if(nrow(blocksL[[length(blocksL)]])>1){
+            ## continue with special treatment of blocksL[[length(blocksL)]]
+            ##   after pre-processing with 'checkAdjComplexRearr()' above
+
+            ## run checkOriAscend/checkOriDescend separately for each
+            ##   element, depending on orientation in expectedOri
+            for(k in 1:(nrow(blocksL[[blocklevel]]))){
+                if(expectedOri[k]==9){
+                    ## pass orientation from higher level
+                    expectedOri[k]<-ori
+                }
+                ## get the ones with opposite of expected orientation
+                if(expectedOri[k]==1){
+                    xxx<-checkOriAscend(blocksL,blocklevel,allelem,dupli,
+                                        elemrows,leaves,testorientation,
+                                        blockoriL,subbl=k,splitblockid,
+                                        remWgt=remWgt)
+                    ## returns tpElA, ivElA, (modified) blockoriL,
+                    ##  splitblockid
+                    tmptp<-cbind(tmptp,xxx$tpElA)
+                    tmpiv<-cbind(tmpiv,xxx$ivElA)
+                    blockoriL<-xxx$blockoriL
+                    splitblockid<-xxx$splitblockid
+                    ## keep track of expected orientation of leaves
+                    if(ncol(xxx$ivElA)>0){
+                        for(i in 1:ncol(xxx$ivElA)){
+                            newinv<-which(xxx$ivElA[,i]==1 & invelem==0)
+                            backinv<-which(xxx$ivElA[,i]==1 & invelem==1)
+                            if(length(newinv)>0){
+                                invelem[newinv]<-rep(1,length(newinv))
+                            }
+                            if(length(backinv)>0){
+                                invelem[backinv]<-rep(0,length(backinv))
+                            }
+                        }
                     }
-                    if(length(backinv)>0){
-                        invelem[backinv]<-rep(0,length(backinv))
+                }else if(expectedOri[k]== -1){
+                    xxx<-checkOriDescend(blocksL,blocklevel,allelem,dupli,
+                                         elemrows,leaves,testorientation,
+                                         blockoriL,subbl=k,splitblockid,
+                                         remWgt=remWgt)
+                    ## returns tpElD, ivElD, (modified) blockoriL,
+                    ##  splitblockid
+                    tmptp<-cbind(tmptp,xxx$tpElD)
+                    tmpiv<-cbind(tmpiv,xxx$ivElD)
+                    blockoriL<-xxx$blockoriL
+                    splitblockid<-xxx$splitblockid
+                    ## keep track of expected orientation of leaves
+                    if(ncol(xxx$ivElD)>0){
+                        for(i in 1:ncol(xxx$ivElD)){
+                            newinv<-which(xxx$ivElD[,i]==1 & invelem==0)
+                            backinv<-which(xxx$ivElD[,i]==1 & invelem==1)
+                            if(length(newinv)>0){
+                                invelem[newinv]<-rep(1,length(newinv))
+                            }
+                            if(length(backinv)>0){
+                                invelem[backinv]<-rep(0,length(backinv))
+                            }
+                        }
                     }
                 }
-            }
-        }else if(ori == -1){
-            xxx<-checkOriDescend(blocksL,blocklevel,allelem,dupli,
-                                 elemrows,leaves,testorientation,blockoriL,
-                                 subbl=1:nrow(blocksL[[blocklevel]]),
-                                 splitblockid,remWgt=remWgt)
-            ## returns tpElD, ivElD, (modified) blockoriL,splitblockid
-            tmptp<-cbind(tmptp,xxx$tpElD)
-            tmpiv<-cbind(tmpiv,xxx$ivElD)
-            blockoriL<-xxx$blockoriL
-            splitblockid<-xxx$splitblockid
-            ## keep track of expected orientation of leaves
-            invelem<-rep(1,length(allelem))
-            if(ncol(xxx$ivElD)>0){
-                for(i in 1:ncol(xxx$ivElD)){
-                    newinv<-which(xxx$ivElD[,i]==1 & invelem==0)
-                    backinv<-which(xxx$ivElD[,i]==1 & invelem==1)
-                    if(length(newinv)>0){
-                        invelem[newinv]<-rep(1,length(newinv))
-                    }
-                    if(length(backinv)>0){
-                        invelem[backinv]<-rep(0,length(backinv))
+                ## for proper function with tests for remaining levels
+                ##   below, ensure that blockoriL[[blocklevel]][k]!=9
+                if(blockoriL[[blocklevel]][k]==9){
+                    ## pass orientation from higher level
+                    blockoriL[[blocklevel]][k]<-expectedOri[k]
+                }
+            } ## close loop over rows k
+
+        }else{ ## nrow(blocksL[[length(blocksL)]])==1
+            if(ori==1){
+                xxx<-checkOriAscend(blocksL,blocklevel,allelem,dupli,
+                                    elemrows,leaves,testorientation,blockoriL,
+                                    subbl=1:nrow(blocksL[[blocklevel]]),
+                                    splitblockid,remWgt=remWgt)
+                ## returns tpElA, ivElA, (modified) blockoriL, splitblockid
+                tmptp<-cbind(tmptp,xxx$tpElA)
+                tmpiv<-cbind(tmpiv,xxx$ivElA)
+                blockoriL<-xxx$blockoriL
+                splitblockid<-xxx$splitblockid
+                ## keep track of expected orientation of leaves
+                invelem<-rep(0,length(allelem))
+                if(ncol(xxx$ivElA)>0){
+                    for(i in 1:ncol(xxx$ivElA)){
+                        newinv<-which(xxx$ivElA[,i]==1 & invelem==0)
+                        backinv<-which(xxx$ivElA[,i]==1 & invelem==1)
+                        if(length(newinv)>0){
+                            invelem[newinv]<-rep(1,length(newinv))
+                        }
+                        if(length(backinv)>0){
+                            invelem[backinv]<-rep(0,length(backinv))
+                        }
                     }
                 }
+            }else if(ori == -1){
+                xxx<-checkOriDescend(blocksL,blocklevel,allelem,dupli,
+                                     elemrows,leaves,testorientation,blockoriL,
+                                     subbl=1:nrow(blocksL[[blocklevel]]),
+                                     splitblockid,remWgt=remWgt)
+                ## returns tpElD, ivElD, (modified) blockoriL,splitblockid
+                tmptp<-cbind(tmptp,xxx$tpElD)
+                tmpiv<-cbind(tmpiv,xxx$ivElD)
+                blockoriL<-xxx$blockoriL
+                splitblockid<-xxx$splitblockid
+                ## keep track of expected orientation of leaves
+                invelem<-rep(1,length(allelem))
+                if(ncol(xxx$ivElD)>0){
+                    for(i in 1:ncol(xxx$ivElD)){
+                        newinv<-which(xxx$ivElD[,i]==1 & invelem==0)
+                        backinv<-which(xxx$ivElD[,i]==1 & invelem==1)
+                        if(length(newinv)>0){
+                            invelem[newinv]<-rep(1,length(newinv))
+                        }
+                        if(length(backinv)>0){
+                            invelem[backinv]<-rep(0,length(backinv))
+                        }
+                    }
+                }
+            }else{ ## ori==9
+                invelem<-rep(NA,length(allelem))
             }
-        }else{ ## ori==9
-            invelem<-rep(NA,length(allelem))
         }
+        ## ===
 
         blocklevel<-blocklevel-1
 
-
+        ## === check orientation of blocks (remaining levels) ===
         ## loop through remaining levels, separately for each higher-level
         ##  block (adjacencies will always be correct by definition)
         if(blocklevel>0){
@@ -632,6 +515,11 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
                         ## if still 9, use ori (if ori would be 9 too then
                         ##  this loop would never have been entered)
                         if(passedOri==9){
+                            if(nrow(blocksL[[length(blocksL)]])>1){
+                                stop("Unexpected block orientation")
+                                ## it should be ensured above that this
+                                ##   never happens
+                            }
                             passedOri<-ori
                         }
                         blockoriL[[z+1]][k]<-passedOri
@@ -710,23 +598,28 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
             }
             ## check if some columns have gaps in tags, as each flank
             ##  will need separate ID
-            multags<-apply(tagmat,2,function(x)
-                length(which(diff(which(x>0))>1))>0)
-            if(sum(multags)>0){
-                cat("Warning: did not expect to find gaps in tags\n")
-                ## >>>> don't think that it will possible for tmptp,
-                ##      even if yes, I don't think that flanks should
-                ##      get separate tags (?)
-                ## for(i in which(multags*1==1)){
-                ##     tmp<-which(tagmat[,i]>0)
-                ##     tmp2<-which(diff(tmp)>1)
-                ##     tagstart<-c(1,tmp2+1)
-                ##     tagend<-c(tmp2,length(tmp))
-                ##     for(j in 1:length(tagstart)){
-                ##         tagmat[tmp[(tagstart[j]):(tagend[j])],i]<-j
-                ##     }
-                ## }
-            }
+            ## >>>> with new 'checkAdjComplexRearr()' function,
+            ##      gaps in tags are indeed possible, but I don't think
+            ##      that they should get separate tags as they are part
+            ##      of the same rearrangement (otherwise, there shouldn't
+            ##      be any gaps and computing multags was already removed)
+            ## multags<-apply(tagmat,2,function(x)
+            ##     length(which(diff(which(x>0))>1))>0)
+            ## if(sum(multags)>0){
+            ##     cat("Warning: did not expect to find gaps in tags\n")
+            ##     ## >>>> don't think that it will possible for tmptp,
+            ##     ##      even if yes, I don't think that flanks should
+            ##     ##      get separate tags (?)
+            ##     ## for(i in which(multags*1==1)){
+            ##     ##     tmp<-which(tagmat[,i]>0)
+            ##     ##     tmp2<-which(diff(tmp)>1)
+            ##     ##     tagstart<-c(1,tmp2+1)
+            ##     ##     tagend<-c(tmp2,length(tmp))
+            ##     ##     for(j in 1:length(tagstart)){
+            ##     ##         tagmat[tmp[(tagstart[j]):(tagend[j])],i]<-j
+            ##     ##     }
+            ##     ## }
+            ## }
             tmptags<-apply(tagmat,1,function(x) paste0(x,collapse="-"))
             unitags<-unique(tmptags)
             ## exclude markers that are untagged
@@ -1521,7 +1414,7 @@ makeTPtags<-function(TPflanks,TPelemGaps,TPelemFlanks,nelem,remWgt=0.05){
 
 ## main loop for going through all scaffolds to identify rearrangements
 tagRearr<-function(SYNT,markers,tree,orientation,nhier,myscafs,splitnodes,
-                   remWgt=0.05){
+                   remWgt=0.05,testlim=100){
 
     if(remWgt<0 | remWgt>=0.5){
         stop("Tagging weight for removed flanks needs to be [0,0.5)")
@@ -1650,7 +1543,7 @@ tagRearr<-function(SYNT,markers,tree,orientation,nhier,myscafs,splitnodes,
                     }
                     synt<-tagTP2(synt,allelem,tmprows,elemrows,TPelem,n,node,
                                  leaves,testorientation,preMasks,
-                                 splitnodes,remWgt=remWgt)
+                                 splitnodes,remWgt=remWgt,testlim=testlim)
                 }
             } ## end loop over p in 1:length(uniprev)
         } ## end loop over n in 2:nhier
@@ -2568,9 +2461,20 @@ assignOri3<-function(blocksL,maskL,allelem,elemrows,
                                            (elemrows[1,j]):(elemrows[2,j]))
                     }
                 }
+                ## >>>> get correct from-to positions for elements
+                ##      requires below change to unmaskedelemrows
+                ##      from elemrows[,unmaskedelem,drop=FALSE]
+                unmaskedelemrows<-matrix(1,nrow=2,ncol=length(unmaskedelem))
+                cntr<-0
+                for(i in 1:length(unmaskedelem)){
+                    cntr<-cntr+1
+                    unmaskedelemrows[1,i]<-cntr
+                    cntr<-cntr+(elemrows[2,unmaskedelem[i]]-elemrows[1,unmaskedelem[i]])
+                    unmaskedelemrows[2,i]<-cntr
+                }
 
                 tmpblockori<-assignOriTwoElem(unmaskedblocksL,unmaskedmaskL,
-                                              elemrows[,unmaskedelem,drop=FALSE],
+                                              unmaskedelemrows,
                                               leaves[unmaskedmarkers],
                                               testorientation[unmaskedmarkers])
             }
@@ -2678,9 +2582,20 @@ assignOri3<-function(blocksL,maskL,allelem,elemrows,
                                        (elemrows[1,j]):(elemrows[2,j]))
                 }
             }
+            ## >>>> get correct from-to positions for elements
+            ##      requires below change to largeelemrows
+            ##      from elemrows[,largeelem,drop=FALSE]
+            largeelemrows<-matrix(1,nrow=2,ncol=length(largeelem))
+            cntr<-0
+            for(i in 1:length(largeelem)){
+                cntr<-cntr+1
+                largeelemrows[1,i]<-cntr
+                cntr<-cntr+(elemrows[2,largeelem[i]]-elemrows[1,largeelem[i]])
+                largeelemrows[2,i]<-cntr
+            }
 
             tmpblockori<-assignOriTwoElem(largeblocksL,largemaskL,
-                                          elemrows[,largeelem,drop=FALSE],
+                                          largeelemrows,
                                           leaves[largemarkers],
                                           testorientation[largemarkers],
                                           useMask=FALSE)
@@ -2729,6 +2644,21 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
         stop("useMask has to be TRUE or FALSE")
     }
 
+    ## adjust elemrows to start at 1 and to have no gaps
+    ##  (should not be the case if function is called correctly)
+    myelemrows<-elemrows
+    ## se<-1
+    ## for(k in 1:ncol(myelemrows)){
+    ##     ee<-se+diff(myelemrows[,k])
+    ##     myelemrows[,k]<-c(se,ee)
+    ##     se<-ee+1
+    ## }
+    if(sum(elemrows[2,]-elemrows[1,])+ncol(elemrows)!=length(leaves) |
+       length(leaves)!=length(testorientation) |
+       max(elemrows)!=length(leaves) | min(elemrows)!=1){
+        stop("Indices in elemrows do not match number of elements")
+    }
+
 
     modblockori<-NA
 
@@ -2770,7 +2700,7 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
                 ## test if leaf and if yes, get its orientation
                 if(length(idx1)==1){
                     tmp<-(blocksL[[1]][idx1,1]):(blocksL[[1]][idx1,2])
-                    tmp2<-(elemrows[1,tmp[1]]):(elemrows[2,tail(tmp,n=1L)])
+                    tmp2<-(myelemrows[1,tmp[1]]):(myelemrows[2,tail(tmp,n=1L)])
                     if(length(tmp2)==1 & sum(!is.na(testorientation[tmp2]) &
                                                  leaves[tmp2]==1)==1){
                         ord1<-testorientation[tmp2]
@@ -2789,7 +2719,7 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
                 ## test if leaf and if yes, get its orientation
                 if(length(idx2)==1){
                     tmp<-(blocksL[[1]][idx2,1]):(blocksL[[1]][idx2,2])
-                    tmp2<-(elemrows[1,tmp[1]]):(elemrows[2,tail(tmp,n=1L)])
+                    tmp2<-(myelemrows[1,tmp[1]]):(myelemrows[2,tail(tmp,n=1L)])
                     if(length(tmp2)==1 & sum(!is.na(testorientation[tmp2]) &
                                                  leaves[tmp2]==1)==1){
                         ord2<-testorientation[tmp2]
@@ -2814,14 +2744,6 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
         ## check number of elements of single final block and if two,
         ##  determine orientation of these elements if they are leaves
 
-        ## adjust elemrows to start at 1 and to have no gaps
-        myelemrows<-elemrows
-        se<-1
-        for(k in 1:ncol(myelemrows)){
-            ee<-se+diff(myelemrows[,k])
-            myelemrows[,k]<-c(se,ee)
-            se<-ee+1
-        }
         ## get correct subset of leaves and testorientation
         tmp<-(blocksL[[bllev]][!mymaskL[[bllev]],1]):
             (blocksL[[bllev]][!mymaskL[[bllev]],2])
@@ -2856,7 +2778,8 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
 
 
 ## check ascending order for rearrangements
-checkAdjAscend<-function(blocks,mask,nelem,usePreMask=FALSE){
+checkAdjAscend<-function(blocks,mask,nelem,usePreMask=FALSE,
+                         returnAdj=FALSE){
 
     adjA<-matrix(0,nrow=nrow(blocks),ncol=2)
 
@@ -3011,43 +2934,47 @@ checkAdjAscend<-function(blocks,mask,nelem,usePreMask=FALSE){
             adjA[blockid[i],2]<-1
         }
     }
-    ## go through adjacencies and tag elements in-between
-    ## >>> this might make more tags than necessary, but also avoid
-    ##     potentially complicated decision which block has been
-    ##     transposed as they will often be multiple options
-    ## >>> could be interesting to store info about the number of
-    ##     breaks in ordering though (i.e., # columns in TLWC)
-    if(sum(adjA)>1){
-        tmpstart<-which(adjA[,1]==1)
-        tmpend<-which(adjA[,2]==1)
-        if(length(tmpstart)>length(tmpend)){
-            stop("Adjacency boundaries incorrect")
-        }
-        if(sum(tmpend-tmpstart<0)>0){
-            stop("Adjacency boundaries incorrect")
-        }
-        for(i in 1:length(tmpstart)){
-            tpEl<-rep(0,nelem)
-            ## get positions of elements
-            tmp1<-tmpstart[i]
-            tmp<-(blocks[tmp1,1]):(blocks[tmp1,2])
-            while(tmp1<tmpend[i]){
-                tmp1<-tmp1+1
-                tmp<-c(tmp,(blocks[tmp1,1]):(blocks[tmp1,2]))
+    if(returnAdj==FALSE){
+        ## go through adjacencies and tag elements in-between
+        ## >>> this might make more tags than necessary, but also avoid
+        ##     potentially complicated decision which block has been
+        ##     transposed as they will often be multiple options
+        ## >>> could be interesting to store info about the number of
+        ##     breaks in ordering though (i.e., # columns in TLWC)
+        if(sum(adjA)>1){
+            tmpstart<-which(adjA[,1]==1)
+            tmpend<-which(adjA[,2]==1)
+            if(length(tmpstart)>length(tmpend)){
+                stop("Adjacency boundaries incorrect")
             }
-            tpEl[tmp]<-rep(1,length(tmp))
-            tpElA<-cbind(tpElA,tpEl)
+            if(sum(tmpend-tmpstart<0)>0){
+                stop("Adjacency boundaries incorrect")
+            }
+            for(i in 1:length(tmpstart)){
+                tpEl<-rep(0,nelem)
+                ## get positions of elements
+                tmp1<-tmpstart[i]
+                tmp<-(blocks[tmp1,1]):(blocks[tmp1,2])
+                while(tmp1<tmpend[i]){
+                    tmp1<-tmp1+1
+                    tmp<-c(tmp,(blocks[tmp1,1]):(blocks[tmp1,2]))
+                }
+                tpEl[tmp]<-rep(1,length(tmp))
+                tpElA<-cbind(tpElA,tpEl)
+            }
         }
+        return(tpElA)
+    }else{
+        return(adjA)
     }
-
-    return(tpElA)
 }
 
 ## ------------------------------------------------------------------
 
 
 ## check descending order for rearrangements
-checkAdjDescend<-function(blocks,mask,nelem,usePreMask=FALSE){
+checkAdjDescend<-function(blocks,mask,nelem,usePreMask=FALSE,
+                          returnAdj=FALSE){
 
     adjD<-matrix(0,nrow=nrow(blocks),ncol=2)
 
@@ -3202,36 +3129,39 @@ checkAdjDescend<-function(blocks,mask,nelem,usePreMask=FALSE){
             adjD[blockid[i],2]<-1
         }
     }
-    ## go through adjacencies and tag elements in-between
-    ## >>> this might make more tags than necessary, but also avoid
-    ##     potentially complicated decision which block has been
-    ##     transposed as they will often be multiple options
-    ## >>> could be interesting to store info about the number of
-    ##     breaks in ordering though (i.e., # columns in TLWC)
-    if(sum(adjD)>1){
-        tmpstart<-which(adjD[,1]==1)
-        tmpend<-which(adjD[,2]==1)
-        if(length(tmpstart)>length(tmpend)){
-            stop("Adjacency boundaries incorrect")
-        }
-        if(sum(tmpend-tmpstart<0)>0){
-            stop("Adjacency boundaries incorrect")
-        }
-        for(i in 1:length(tmpstart)){
-            tpEl<-rep(0,nelem)
-            ## get positions of elements
-            tmp1<-tmpstart[i]
-            tmp<-(blocks[tmp1,1]):(blocks[tmp1,2])
-            while(tmp1<tmpend[i]){
-                tmp1<-tmp1+1
-                tmp<-c(tmp,(blocks[tmp1,1]):(blocks[tmp1,2]))
+    if(returnAdj==FALSE){
+        ## go through adjacencies and tag elements in-between
+        ## >>> this might make more tags than necessary, but also avoid
+        ##     potentially complicated decision which block has been
+        ##     transposed as they will often be multiple options
+        ## >>> could be interesting to store info about the number of
+        ##     breaks in ordering though (i.e., # columns in TLWC)
+        if(sum(adjD)>1){
+            tmpstart<-which(adjD[,1]==1)
+            tmpend<-which(adjD[,2]==1)
+            if(length(tmpstart)>length(tmpend)){
+                stop("Adjacency boundaries incorrect")
             }
-            tpEl[tmp]<-rep(1,length(tmp))
-            tpElD<-cbind(tpElD,tpEl)
+            if(sum(tmpend-tmpstart<0)>0){
+                stop("Adjacency boundaries incorrect")
+            }
+            for(i in 1:length(tmpstart)){
+                tpEl<-rep(0,nelem)
+                ## get positions of elements
+                tmp1<-tmpstart[i]
+                tmp<-(blocks[tmp1,1]):(blocks[tmp1,2])
+                while(tmp1<tmpend[i]){
+                    tmp1<-tmp1+1
+                    tmp<-c(tmp,(blocks[tmp1,1]):(blocks[tmp1,2]))
+                }
+                tpEl[tmp]<-rep(1,length(tmp))
+                tpElD<-cbind(tpElD,tpEl)
+            }
         }
+        return(tpElD)
+    }else{
+        return(adjD)
     }
-
-    return(tpElD)
 }
 
 ## ------------------------------------------------------------------
@@ -3240,7 +3170,16 @@ checkAdjDescend<-function(blocks,mask,nelem,usePreMask=FALSE){
 ## check orientation of blocks, for positive higher-order orientation
 checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                          elemrows,leaves,testorientation,
-                         blockoriL,subbl,splitblockid,remWgt=0.05){
+                         blockoriL,subbl,splitblockid,
+                         remWgt=0.05,assumedBlocklev=NULL){
+
+    ## assumedBlocklevel is required for proper function with
+    ##   'checkAdjComplexRearr()'
+    if(is.null(assumedBlocklev)){
+        assumedBlocklev<-blocklev
+    }else if(assumedBlocklev < blocklev){
+        stop("assumedBlocklev cannot be smaller than blocklev")
+    }
 
     tpElA<-matrix(NA,ncol=0,nrow=length(allelem))
     ivElA<-matrix(NA,ncol=0,nrow=length(allelem))
@@ -3294,7 +3233,7 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                             ##  negative orientation (all markers will need
                             ##  to have orientation info available)
 
-                            if(blocklev==2){
+                            if(assumedBlocklev==2){
                                 ## get positions of markers
                                 tmpe1<-numeric()
                                 tmpe2<-numeric()
@@ -3409,6 +3348,9 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                             ori2<-blocksL[[blocklev-1]][tmp1[2],6]
                             ## descend to lower level, if needed
                             y<-blocklev-2
+                            if(y==0){
+                                pos1<-tmp1[1]
+                            }
                             while(ori1==9 & y>=1){
                                 pos1<-which(blocksL[[y]][,1]==blocksL[[blocklev-1]][tmp1[1],1] & blocksL[[y]][,2]==blocksL[[blocklev-1]][tmp1[1],2])
                                 if(length(pos1)!=1){
@@ -3418,6 +3360,9 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                                 y<-y-1
                             }
                             y<-blocklev-2
+                            if(y==0){
+                                pos2<-tmp1[2]
+                            }
                             while(ori2==9 & y>=1){
                                 pos2<-which(blocksL[[y]][,1]==blocksL[[blocklev-1]][tmp1[2],1] & blocksL[[y]][,2]==blocksL[[blocklev-1]][tmp1[2],2])
                                 if(length(pos2)!=1){
@@ -3427,8 +3372,9 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                                 y<-y-1
                             }
                             ## if ori is still '9', check if it is a leaf
-                            ##  (then get orientation)
-                            if(ori1==9){
+                            ##  (then get orientation), but only if
+                            ##  assumedBlocklev==blocklev
+                            if(ori1==9 & assumedBlocklev==blocklev){
                                 j<-blocksL[[1]][pos1,1]
                                 ## (in fact, j should be equal e1 then)
                                 tmpe1<-(elemrows[1,j]):(elemrows[2,j])
@@ -3440,7 +3386,7 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                                     ori1<-testorientation[tmpe1] ## 1 or -1
                                 }
                             }
-                            if(ori2==9){
+                            if(ori2==9 & assumedBlocklev==blocklev){
                                 ## get positions of markers
                                 j<-blocksL[[1]][pos2,1]
                                 ## (in fact, j should be equal e2 then)
@@ -3532,7 +3478,16 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
 ## check orientation of blocks, for negative higher-order orientation
 checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                           elemrows,leaves,testorientation,
-                          blockoriL,subbl,splitblockid,remWgt=0.05){
+                          blockoriL,subbl,splitblockid,
+                          remWgt=0.05,assumedBlocklev=NULL){
+
+    ## assumedBlocklevel is required for proper function with
+    ##   'checkAdjComplexRearr()'
+    if(is.null(assumedBlocklev)){
+        assumedBlocklev<-blocklev
+    }else if(assumedBlocklev < blocklev){
+        stop("assumedBlocklev cannot be smaller than blocklev")
+    }
 
     tpElD<-matrix(NA,ncol=0,nrow=length(allelem))
     ivElD<-matrix(NA,ncol=0,nrow=length(allelem))
@@ -3586,7 +3541,7 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                             ##   positive orientation (all markers will need
                             ##   to have orientation info available)
 
-                            if(blocklev==2){
+                            if(assumedBlocklev==2){
                                 ## get positions of markers
                                 tmpe1<-numeric()
                                 tmpe2<-numeric()
@@ -3701,6 +3656,9 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                             ori2<-blocksL[[blocklev-1]][tmp1[2],6]
                             ## descend to lower level, if needed
                             y<-blocklev-2
+                            if(y==0){
+                                pos1<-tmp1[1]
+                            }
                             while(ori1==9 & y>=1){
                                 pos1<-which(blocksL[[y]][,1]==blocksL[[blocklev-1]][tmp1[1],1] & blocksL[[y]][,2]==blocksL[[blocklev-1]][tmp1[1],2])
                                 if(length(pos1)!=1){
@@ -3710,6 +3668,9 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                                 y<-y-1
                             }
                             y<-blocklev-2
+                            if(y==0){
+                                pos2<-tmp1[2]
+                            }
                             while(ori2==9 & y>=1){
                                 pos2<-which(blocksL[[y]][,1]==blocksL[[blocklev-1]][tmp1[2],1] & blocksL[[y]][,2]==blocksL[[blocklev-1]][tmp1[2],2])
                                 if(length(pos2)!=1){
@@ -3719,8 +3680,9 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                                 y<-y-1
                             }
                             ## if ori is still '9', check if it is a leaf
-                            ##  (then get orientation)
-                            if(ori1==9){
+                            ##  (then get orientation), but only if
+                            ##  assumedBlocklev==blocklev
+                            if(ori1==9 & assumedBlocklev==blocklev){
                                 j<-blocksL[[1]][pos1,1]
                                 ## (in fact, j should be equal e1 then)
                                 tmpe1<-(elemrows[1,j]):(elemrows[2,j])
@@ -3732,7 +3694,7 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                                     ori1<-testorientation[tmpe1] ## 1 or -1
                                 }
                             }
-                            if(ori2==9){
+                            if(ori2==9 & assumedBlocklev==blocklev){
                                 ## get positions of markers
                                 j<-blocksL[[1]][pos2,1]
                                 ## (in fact, j should be equal e2 then)
@@ -4757,6 +4719,748 @@ appendData<-function(oldMatrix,matrixAppendix){
     }
     newMatrix<-rbind(oldMatrix,matrixAppendix)
     return(newMatrix)
+}
+
+## ------------------------------------------------------------------
+
+
+## if all block elements received a tp tag, adjust so that
+##  largest block won't get a tag
+## blocks and mask are at tested blocklevel, blocks1 is at
+##  blocklevel==1
+adjustTPtags<-function(tpmat,blocks,mask,blocks1,elemrows,remWgt){
+
+    if(!is.matrix(tpmat)){
+        stop("Require matrix as input")
+    }
+    if(sum(rowSums(tpmat)>=1)!=nrow(tpmat)){
+        return(tpmat)
+    }else{
+        untag<-integer()
+        ## get block sizes
+        blsize<-integer(nrow(blocks))
+        for(k in 1:length(blsize)){
+            ## expand block over elements to markers
+            ## get columns in elemrows
+            tmp<-(blocks[k,1]):(blocks[k,2])
+            ## get number of markers
+            for(j in tmp){
+                blsize[k]<-blsize[k]+diff(elemrows[,j])+1
+            }
+        }
+        untag<-which(blsize==max(blsize))
+        if(length(untag)>1){
+            if(sum(!mask[untag])==1){
+                ## only one of the largest blocks is unmasked
+                untag<-untag[!mask[untag]]
+            }else{
+                ## get number of subblocks
+                nsubbl<-integer(length(blsize))
+                for(k in 1:length(blsize)){
+                    nsubbl[k]<-sum(blocks1[,1]>=blocks[k,1] &
+                                       blocks1[,2]<=blocks[k,2])
+                }
+                ## get the one(s) with the fewest subblocks
+                ## >>>> ! excluding blocks that were removed in
+                ##        checkAdjComplexRearr() if called from there
+                nsubbl<-nsubbl[untag]
+                untag<-untag[which(nsubbl==min(nsubbl))]
+            }
+        }
+        if(length(untag)==1){
+            ## get row and column in tpmat
+            tagrow<-(blocks[untag,1]):(blocks[untag,2])
+            tagcln<-which(colSums(tpmat[tagrow,,drop=FALSE])==length(tagrow))
+            if(length(tagcln)==1){
+                tagpos<-tpmat[,tagcln]==1
+                tpmat[tagpos,tagcln]<-remWgt
+                ## note: this might remove tags beyond the
+                ##  boundaries of the largest block (which should
+                ##  be reasonable as everything tagged within a
+                ##  column should have correct adjacencies within it)
+                if(ncol(tpmat)==2){
+                    tagpos<-tpmat[,-tagcln]==1
+                    tpmat[tagpos,-tagcln]<-1-remWgt
+                }
+            }
+        }else if(length(untag)==2 & ncol(tpmat)==2){
+            ## two blocks, both tagged and of equal size
+            tpmat[tpmat[,1]==1,1]<-0.5
+            tpmat[tpmat[,2]==1,2]<-0.5
+            if(sum(rowSums(tpmat)==0.5)!=nrow(tpmat)){
+                stop("Tags for transposed blocks are not as they should be")
+            }
+        }
+        ## note: if length(untag)!=1, don't adjust tags,
+        ##  unless only two adjacency sets
+        return(tpmat)
+    }
+}
+
+## ------------------------------------------------------------------
+
+
+## if no final block can be made, exclude smallest blocks
+##   and test if issue can be solved; return blocks to keep
+keepBlocks<-function(blocksL,maskL,elemrows,allelem,leafelem,testlim=100){
+
+    ## block columns:
+    ##   start, end, start rank element, end rank element,
+    ##   count of leaf markers, order a-/descending, block rank
+
+    z<-length(blocksL)
+
+    if(nrow(blocksL[[z]])==1){ ## nothing to do
+        return(TRUE)
+    }
+
+
+    ## number of markers in block
+    blsize<-integer(nrow(blocksL[[z]]))
+    ## expand block over elements to markers
+    for(k in 1:nrow(blocksL[[z]])){
+        ## get columns in elemrows
+        tmp<-(blocksL[[z]][k,1]):(blocksL[[z]][k,2])
+        ## get number of markers
+        for(j in tmp){
+            blsize[k]<-blsize[k]+diff(elemrows[,j])+1
+        }
+    }
+    blsizeAdj<-blsize
+
+    duplibl<-which(maskL[[z]]==TRUE)
+    if(length(duplibl)>0 & length(duplibl)<length(maskL[[z]])){
+        ## some, but not all are masked (i.e., duplicated elements
+        ##   that are not bound into larger blocks)
+        ## set blsize for duplibl to zero for first round
+        ##   of testing below
+        blsizeAdj[duplibl]<-0
+    }
+
+    ## exclude small block(s) and re-cluster remaining blocks
+    ##   until final simplification can be achieved;
+    ## however do not enter loop if <=3 blocks remain, as
+    ##   they always can be clustered
+    minblsize<-min(blsizeAdj)
+    tokeep<-blsizeAdj>minblsize
+    final<-FALSE
+    while(final==FALSE & sum(tokeep)>3){
+        ## make new block with kept rows of old block
+        tmpblocks<-blocksL[[z]][tokeep,]
+        ## get elements within largest blocks, and adjust
+        ##   positions in tmpblocks
+        largeelem<-integer()
+        tmpstart<-1
+        for(k in 1:nrow(tmpblocks)){
+            ## get columns in elemrows
+            largeelem<-c(largeelem,
+                         (tmpblocks[k,1]):(tmpblocks[k,2]))
+            tmpend<-(tmpblocks[k,2]-tmpblocks[k,1])+tmpstart
+            tmpblocks[k,1:2]<-c(tmpstart,tmpend)
+            tmpstart<-tmpend+1
+        }
+        tmpblocks[,7]<-myRank(rowMeans(tmpblocks[,3:4,drop=FALSE]))
+        ## continue clustering with reduced set of block elements
+        largeblocksL<-list(tmpblocks)
+        largeblocksL<-makeBlocks(largeblocksL,
+                                 tmpblocks[,1],
+                                 tmpblocks[,2],
+                                 tmpblocks[,7],
+                                 leafelem[largeelem],
+                                 iter=2)
+        if(nrow(largeblocksL[[length(largeblocksL)]])==1){
+            ## final simplification
+            final<-TRUE
+        }else{
+            ## exclude next smallest block(s)
+            minblsize<-min(blsizeAdj[tokeep])
+            tokeep<-blsizeAdj>minblsize
+        }
+    }
+    ## for each excluded block, put it back and test
+    ##   if final simplification still possible
+    putback<-integer()
+    if(sum(tokeep==FALSE)>1){
+        cand<-which(tokeep==FALSE)
+        for(cn in cand){
+            totest<-tokeep
+            totest[cn]<-TRUE
+            ## make new block with kept rows of old block
+            tmpblocks<-blocksL[[z]][totest,]
+            ## get elements within remaining blocks, and adjust
+            ##   positions in tmpblocks
+            largeelem<-integer()
+            tmpstart<-1
+            for(k in 1:nrow(tmpblocks)){
+                ## get columns in elemrows
+                largeelem<-c(largeelem,
+                             (tmpblocks[k,1]):(tmpblocks[k,2]))
+                tmpend<-(tmpblocks[k,2]-tmpblocks[k,1])+tmpstart
+                tmpblocks[k,1:2]<-c(tmpstart,tmpend)
+                tmpstart<-tmpend+1
+            }
+            tmpblocks[,7]<-myRank(rowMeans(tmpblocks[,3:4,drop=FALSE]))
+            ## continue clustering with reduced set of block elements
+            largeblocksL<-list(tmpblocks)
+            largeblocksL<-makeBlocks(largeblocksL,
+                                     tmpblocks[,1],
+                                     tmpblocks[,2],
+                                     tmpblocks[,7],
+                                     leafelem[largeelem],
+                                     iter=2)
+            if(nrow(largeblocksL[[length(largeblocksL)]])==1){
+                ## final simplification
+                putback<-c(putback,cn)
+            }
+        }
+    }
+    if(length(putback)==0){ ## none can be put back
+        ##    -> just stick with set in tokeep
+        tokeep<-tokeep
+    }else if(length(putback)==1){  ## one can be put back
+        ##    -> put it back
+        tokeep[putback]<-TRUE
+    }else{ ## some or all can be put back
+        ##    -> test pairs / randomly select one
+        ##       (better: keep testing combinations, and
+        ##        also check effects on final rearrangement
+        ##        numbers for different sets of removed blocks)
+        tuple<-2
+        putback1<-as.matrix(t(putback))
+        putback2<-matrix(NA,nrow=tuple,ncol=0)
+        foundcand<-FALSE
+        while(foundcand==FALSE & tuple<=sum(!tokeep)){
+            ## make temporary matrix with all tests
+            cn1cn2<-putback2
+            for(i in 1:ncol(putback1)){
+                cn1<-putback1[,i]
+                cn2set<-which(tokeep==FALSE)
+                cn2set<-cn2set[!is.element(cn2set,cn1)]
+                for(cn2 in cn2set){
+                    cn1cn2<-cbind(cn1cn2,c(cn1,cn2))
+                }
+            }
+            ## randomly select subset if too many test sets
+            if(ncol(cn1cn2)>testlim){
+                redset<-sample(1:ncol(cn1cn2),testlim)
+                ## (standard sample is save)
+                cn1cn2<-cn1cn2[,redset]
+            }
+            for(i in 1:ncol(cn1cn2)){
+                totest<-tokeep
+                totest[cn1cn2[,i]]<-TRUE
+
+                ## make new block with kept rows of old block
+                tmpblocks<-blocksL[[z]][totest,]
+                ## get elements within remaining blocks, and adjust
+                ##   positions in tmpblocks
+                largeelem<-integer()
+                tmpstart<-1
+                for(k in 1:nrow(tmpblocks)){
+                    ## get columns in elemrows
+                    largeelem<-c(largeelem,
+                                 (tmpblocks[k,1]):(tmpblocks[k,2]))
+                    tmpend<-(tmpblocks[k,2]-tmpblocks[k,1])+tmpstart
+                    tmpblocks[k,1:2]<-c(tmpstart,tmpend)
+                    tmpstart<-tmpend+1
+                }
+                tmpblocks[,7]<-myRank(rowMeans(tmpblocks[,3:4,drop=FALSE]))
+                ## continue clustering with reduced set of block elements
+                largeblocksL<-list(tmpblocks)
+                largeblocksL<-makeBlocks(largeblocksL,
+                                         tmpblocks[,1],
+                                         tmpblocks[,2],
+                                         tmpblocks[,7],
+                                         leafelem[largeelem],
+                                         iter=2)
+                if(nrow(largeblocksL[[length(largeblocksL)]])==1){
+                    ## final simplification
+                    putback2<-cbind(putback2,sort(cn1cn2[,i]))
+                }
+            }
+            putback2<-putback2[,!duplicated(putback2,MARGIN=2),drop=FALSE]
+            if(ncol(putback2)==0){
+                putback2<-putback1
+                tuple<-tuple-1
+                foundcand<-TRUE
+            }else if(ncol(putback2)==1){
+                foundcand<-TRUE
+            }else{
+                putback1<-putback2
+                tuple<-tuple+1
+                putback2<-matrix(NA,nrow=tuple,ncol=0)
+            }
+        }
+        if(ncol(putback2)==1){
+            ## one set can be put back
+            tokeep[putback2[,1]]<-TRUE
+        }else if(ncol(putback2)>1){
+            ## randomly sample one pair from largest putback2
+            candsz<-apply(putback2,2,function(x) sum(blsizeAdj[x]))
+            candps<-(1:ncol(putback2))[candsz==max(candsz)]
+            rsm<-candps[sample.int(length(candps),1)]
+            ## standard sample is NOT save if length of set can be 1
+            tokeep[putback2[,rsm]]<-TRUE
+        }
+    }
+    ## when <3 blocks kept, keep largest /
+    ##   randomly sample three blocks
+    if(sum(tokeep==TRUE)<3){
+        maxblsize<-max(blsizeAdj)
+        tokeep<-blsizeAdj==maxblsize
+        while(sum(tokeep==TRUE)<3){
+            ## get next largest block(s)
+            maxblsize<-max(blsizeAdj[!tokeep])
+            tokeep<-blsizeAdj>=maxblsize
+        }
+        if(sum(tokeep==TRUE)>3){
+            ## got too many, remove some randomly
+            cand<-which(blsizeAdj==maxblsize)
+            sampsize<-sum(tokeep==TRUE)-3
+            getout<-cand[sample.int(length(cand),sampsize)]
+            ## standard sample is NOT save to use here
+            ##   because length(cand) can be 1
+            tokeep[getout]<-FALSE
+        }
+    }
+    return(tokeep)
+}
+
+## ------------------------------------------------------------------
+
+
+## if no final block can be made, exclude smallest blocks
+##   and test for wrong adjacencies when re-clustering blocks
+##   so that final combination is possible; tag each original
+##   block in-between incorrect adjacencies separately, as well
+##   as all excluded blocks
+checkAdjComplexRearr<-function(blocksL,maskL,allelem,elemrows,
+                               leafelem,leaves,testorientation,
+                               tokeep,remWgt,ori=NULL){
+
+    if(sum(tokeep==TRUE)==0 | sum(tokeep==FALSE)==0){
+        stop("tokeep requires a mix of TRUE and FALSE values")
+    }
+    if(!is.null(ori)){
+        if(!is.element(ori,c(1,-1))){
+            stop("Unexpected orientation")
+        }
+    }
+
+    tmptp<-matrix(NA,nrow=length(allelem),ncol=0)
+    tmpiv<-matrix(NA,nrow=length(allelem),ncol=0)
+    invelem<-rep(NA,length(allelem))
+    splitblockid<-rep("",length(allelem))
+
+    z<-length(blocksL)
+
+    ## make new block with kept rows of old block
+    tmpblocks<-blocksL[[z]][tokeep,]
+    ## get elements within remaining blocks, and adjust
+    ##   positions in tmpblocks (important)
+    unmaskedelem<-integer()
+    tmpstart<-1
+    for(k in 1:nrow(tmpblocks)){
+        ## get columns in elemrows
+        unmaskedelem<-c(unmaskedelem,
+                        (tmpblocks[k,1]):(tmpblocks[k,2]))
+        tmpend<-(tmpblocks[k,2]-tmpblocks[k,1])+tmpstart
+        tmpblocks[k,1:2]<-c(tmpstart,tmpend)
+        tmpstart<-tmpend+1
+    }
+    tmpblocks[,7]<-myRank(rowMeans(tmpblocks[,3:4,drop=FALSE]))
+    ## continue clustering with reduced set of block elements
+    unmaskedblocksL<-list(tmpblocks)
+    unmaskedblocksL<-makeBlocks(unmaskedblocksL,
+                                tmpblocks[,1],
+                                tmpblocks[,2],
+                                tmpblocks[,7],
+                                leafelem[unmaskedelem],
+                                iter=2)
+    if(nrow(unmaskedblocksL[[length(unmaskedblocksL)]])!=1){
+        stop("Something went wrong when excluding blocks")
+    }
+
+
+    ## find duplicated elements not yet bound into larger blocks
+    tmpelem<-allelem[unmaskedelem]
+    tmpdupli<-unique(tmpelem[duplicated(tmpelem)])
+    ## masks used in assignOri3, checkAdj*, adjustTPtags
+    ##unmaskedmaskL<-setMasks(unmaskedblocksL,tmpelem,tmpdupli,
+    ##                        maskL[[z]][tokeep])
+    unmaskedmaskL<-setMasks(unmaskedblocksL,tmpelem,tmpdupli)
+    ## get correct subset for leaves and testorientation
+    ## expand block over elements to markers
+    unmaskedmarkers<-integer()
+    for(j in unmaskedelem){
+        ## get position of markers
+        unmaskedmarkers<-c(unmaskedmarkers,
+                           (elemrows[1,j]):(elemrows[2,j]))
+    }
+    ## get correct from-to positions for elements
+    unmaskedelemrows<-matrix(1,nrow=2,ncol=length(unmaskedelem))
+    cntr<-0
+    for(i in 1:length(unmaskedelem)){
+        cntr<-cntr+1
+        unmaskedelemrows[1,i]<-cntr
+        cntr<-cntr+(elemrows[2,unmaskedelem[i]]-elemrows[1,unmaskedelem[i]])
+        unmaskedelemrows[2,i]<-cntr
+    }
+
+    if(is.null(ori)){
+        unmaskedori<-assignOri3(unmaskedblocksL,unmaskedmaskL,
+                                allelem[unmaskedelem],
+                                unmaskedelemrows,
+                                leafelem[unmaskedelem],
+                                leaves[unmaskedmarkers],
+                                testorientation[unmaskedmarkers])
+    }else{
+        unmaskedori<-ori
+    }
+    ## check adjacencies
+    unmaskedlevel<-length(unmaskedblocksL)-1
+    if(unmaskedori==1){
+        unmaskedtp<-checkAdjAscend(unmaskedblocksL[[unmaskedlevel]],
+                                   unmaskedmaskL[[unmaskedlevel]],
+                                   length(allelem[unmaskedelem]))
+    }else if(unmaskedori== -1){
+        unmaskedtp<-checkAdjDescend(unmaskedblocksL[[unmaskedlevel]],
+                                   unmaskedmaskL[[unmaskedlevel]],
+                                   length(allelem[unmaskedelem]))
+    }else{
+        stop("Node has unexpected orientation")
+    }
+
+    if(ncol(unmaskedtp)>0){
+        ## if all block elements received a tp tag, adjust so that
+        ##  largest block won't get a tag
+        if(sum(rowSums(unmaskedtp)>=1)==nrow(unmaskedtp)){
+            ## first, find rows in original blocksL[[1]] that
+            ##   correspond to blocksL[[z]][tokeep,]
+            orgtokeep<-integer()
+            for(k in 1:nrow(blocksL[[z]])){
+                if(!tokeep[k]){
+                    next
+                }
+                orgtokeep<-c(orgtokeep,which(blocksL[[1]][,1]>=
+                                                 blocksL[[z]][k,1] &
+                                                     blocksL[[1]][,2]<=
+                                                         blocksL[[z]][k,2]))
+            }
+            if(length(orgtokeep)<1){
+                stop("Something went wrong when excluding blocks")
+            }
+            unmaskedtp<-adjustTPtags(unmaskedtp,
+                                     unmaskedblocksL[[unmaskedlevel]],
+                                     unmaskedmaskL[[unmaskedlevel]],
+                                     blocksL[[1]][orgtokeep,,drop=FALSE],
+                                     unmaskedelemrows,
+                                     remWgt)
+        }
+    }
+
+    ## storage for block element orientation
+    ##  (can be overwritten in functions below)
+    unmaskedblockoriL<-vector("list",length(unmaskedblocksL))
+    for(uz in 1:length(unmaskedblocksL)){
+        unmaskedblockoriL[[uz]]<-unmaskedblocksL[[uz]][,6]
+    }
+
+    ## store splitblockid (if TP in 'checkOriAscend'/'checkOriDescend')
+    unmaskedsplitblockid<-rep("",length(unmaskedelem))
+
+    ## storage for inversions
+    unmaskediv<-matrix(NA,nrow=length(unmaskedelem),ncol=0)
+
+    ## for using unmaskedblocksL below it is important that
+    ##   columns 1,2,5,6 are correct (i.e., match to subset
+    ##   of allelem[unmaskedelem])
+
+
+    ## in checkOri* functions, special treatment for
+    ##   blocklevel==2: however here checks will only be
+    ##   valid if unmaskedlevel==1 corresponds to
+    ##   blocklevel==1; if this is not the case, checkOri*
+    ##   needs to work as when the blocklevel would be >2
+    assumedBlocklev<-length(blocksL)+unmaskedlevel-1
+
+
+    ## === check orientation of blocks (top level) ===
+    if(unmaskedori==1){
+        xxx<-checkOriAscend(unmaskedblocksL,unmaskedlevel,
+                            allelem[unmaskedelem],tmpdupli,
+                            unmaskedelemrows,
+                            leaves[unmaskedmarkers],
+                            testorientation[unmaskedmarkers],
+                            unmaskedblockoriL,
+                            subbl=1:nrow(unmaskedblocksL[[unmaskedlevel]]),
+                            unmaskedsplitblockid,remWgt=remWgt,
+                            assumedBlocklev=assumedBlocklev)
+        ## returns tpElA, ivElA, (modified) blockoriL, splitblockid
+        unmaskedtp<-cbind(unmaskedtp,xxx$tpElA)
+        unmaskediv<-cbind(unmaskediv,xxx$ivElA)
+        unmaskedblockoriL<-xxx$blockoriL
+        unmaskedsplitblockid<-xxx$splitblockid
+        ## keep track of expected orientation of leaves
+        unmaskedinvelem<-rep(0,length(unmaskedelem))
+        if(ncol(xxx$ivElA)>0){
+            for(i in 1:ncol(xxx$ivElA)){
+                newinv<-which(xxx$ivElA[,i]==1 & unmaskedinvelem==0)
+                backinv<-which(xxx$ivElA[,i]==1 & unmaskedinvelem==1)
+                if(length(newinv)>0){
+                    unmaskedinvelem[newinv]<-rep(1,length(newinv))
+                }
+                if(length(backinv)>0){
+                    unmaskedinvelem[backinv]<-rep(0,length(backinv))
+                }
+            }
+        }
+    }else if(unmaskedori == -1){
+        xxx<-checkOriDescend(unmaskedblocksL,unmaskedlevel,
+                             allelem[unmaskedelem],tmpdupli,
+                             unmaskedelemrows,
+                             leaves[unmaskedmarkers],
+                             testorientation[unmaskedmarkers],
+                             unmaskedblockoriL,
+                             subbl=1:nrow(unmaskedblocksL[[unmaskedlevel]]),
+                             unmaskedsplitblockid,remWgt=remWgt,
+                             assumedBlocklev=assumedBlocklev)
+        ## returns tpElD, ivElD, (modified) blockoriL,splitblockid
+        unmaskedtp<-cbind(unmaskedtp,xxx$tpElD)
+        unmaskediv<-cbind(unmaskediv,xxx$ivElD)
+        unmaskedblockoriL<-xxx$blockoriL
+        unmaskedsplitblockid<-xxx$splitblockid
+        ## keep track of expected orientation of leaves
+        unmaskedinvelem<-rep(1,length(unmaskedelem))
+        if(ncol(xxx$ivElD)>0){
+            for(i in 1:ncol(xxx$ivElD)){
+                newinv<-which(xxx$ivElD[,i]==1 & unmaskedinvelem==0)
+                backinv<-which(xxx$ivElD[,i]==1 & unmaskedinvelem==1)
+                if(length(newinv)>0){
+                    unmaskedinvelem[newinv]<-rep(1,length(newinv))
+                }
+                if(length(backinv)>0){
+                    unmaskedinvelem[backinv]<-rep(0,length(backinv))
+                }
+            }
+        }
+    }else{ ## unmaskedori==9 (should never be the case here)
+        unmaskedinvelem<-rep(NA,length(unmaskedelem))
+    }
+    ## ===
+
+    unmaskedlevel<-unmaskedlevel-1
+    assumedBlocklev<-assumedBlocklev-1
+
+    ## === check orientation of blocks (remaining levels) ===
+    ## loop through remaining levels, separately for each higher-level
+    ##  block (adjacencies will always be correct by definition)
+    ## don't do the last level unmaskedblocksL[[1]] as then the tests
+    ##  should switch to blocksL[[blocklevel]]
+    if(unmaskedlevel>1){
+        for(uz in unmaskedlevel:2){
+            for(k in 1:(nrow(unmaskedblocksL[[uz+1]]))){
+                ## get elements to consider
+                tmp<-which(unmaskedblocksL[[uz]][,1]>=
+                               unmaskedblocksL[[uz+1]][k,1] &
+                                   unmaskedblocksL[[uz]][,2]<=
+                                       unmaskedblocksL[[uz+1]][k,2])
+                passedOri<-9
+                if(unmaskedblockoriL[[uz+1]][k]==9){
+                    ## pass orientation from higher level
+                    y<-uz+2
+                    while(y<=length(unmaskedblocksL) & passedOri==9){
+                        if(nrow(unmaskedblocksL[[y]])==1){
+                            ## avoid taking original orientation
+                            ##  but take assigned ori instead
+                            break
+                        }
+                        tmp2<-which(unmaskedblocksL[[y]][,1]<=
+                                        unmaskedblocksL[[uz+1]][k,1] &
+                                            unmaskedblocksL[[y]][,2]>=
+                                                unmaskedblocksL[[uz+1]][k,2])
+                        passedOri<-unmaskedblockoriL[[y]][tmp2]
+                        y<-y+1
+                    }
+                    ## if still 9, use ori (if ori would be 9 too then
+                    ##  this loop would never have been entered)
+                    if(passedOri==9){
+                        passedOri<-unmaskedori
+                    }
+                    unmaskedblockoriL[[uz+1]][k]<-passedOri
+                }
+                ## get the ones with opposite of expected orientation
+                if(unmaskedblockoriL[[uz+1]][k]==1){
+                    xxx<-checkOriAscend(unmaskedblocksL,uz,
+                                        allelem[unmaskedelem],tmpdupli,
+                                        unmaskedelemrows,
+                                        leaves[unmaskedmarkers],
+                                        testorientation[unmaskedmarkers],
+                                        unmaskedblockoriL,
+                                        subbl=tmp,
+                                        unmaskedsplitblockid,remWgt=remWgt,
+                                        assumedBlocklev=assumedBlocklev)
+                    ## returns tpElA, ivElA, (modified) blockoriL,
+                    ##  splitblockid
+                    unmaskedtp<-cbind(unmaskedtp,xxx$tpElA)
+                    unmaskediv<-cbind(unmaskediv,xxx$ivElA)
+                    unmaskedblockoriL<-xxx$blockoriL
+                    unmaskedsplitblockid<-xxx$splitblockid
+                    ## keep track of expected orientation of leaves
+                    if(ncol(xxx$ivElA)>0){
+                        for(i in 1:ncol(xxx$ivElA)){
+                            newinv<-which(xxx$ivElA[,i]==1 &
+                                              unmaskedinvelem==0)
+                            backinv<-which(xxx$ivElA[,i]==1 &
+                                               unmaskedinvelem==1)
+                            if(length(newinv)>0){
+                                unmaskedinvelem[newinv]<-rep(1,length(newinv))
+                            }
+                            if(length(backinv)>0){
+                                unmaskedinvelem[backinv]<-rep(0,length(backinv))
+                            }
+                        }
+                    }
+                }else if(unmaskedblockoriL[[uz+1]][k]== -1){
+                    xxx<-checkOriDescend(unmaskedblocksL,uz,
+                                         allelem[unmaskedelem],tmpdupli,
+                                         unmaskedelemrows,
+                                         leaves[unmaskedmarkers],
+                                         testorientation[unmaskedmarkers],
+                                         unmaskedblockoriL,
+                                         subbl=tmp,
+                                         unmaskedsplitblockid,remWgt=remWgt,
+                                         assumedBlocklev=assumedBlocklev)
+                    ## returns tpElD, ivElD, (modified) blockoriL,
+                    ##  splitblockid
+                    unmaskedtp<-cbind(unmaskedtp,xxx$tpElD)
+                    unmaskediv<-cbind(unmaskediv,xxx$ivElD)
+                    unmaskedblockoriL<-xxx$blockoriL
+                    unmaskedsplitblockid<-xxx$splitblockid
+                    ## keep track of expected orientation of leaves
+                    if(ncol(xxx$ivElD)>0){
+                        for(i in 1:ncol(xxx$ivElD)){
+                            newinv<-which(xxx$ivElD[,i]==1 &
+                                              unmaskedinvelem==0)
+                            backinv<-which(xxx$ivElD[,i]==1 &
+                                               unmaskedinvelem==1)
+                            if(length(newinv)>0){
+                                unmaskedinvelem[newinv]<-rep(1,length(newinv))
+                            }
+                            if(length(backinv)>0){
+                                unmaskedinvelem[backinv]<-rep(0,length(backinv))
+                            }
+                        }
+                    }
+                }
+            } ## close loop over rows
+        } ## close loop over unmaskedlevels
+    } ## close unmaskedlevel>1
+
+    ## unmaskedblocksL[[1]] is not tested here
+
+    ## ===== transfer identified ori to full blocksL =====
+
+    ## identify expected blockorientation for each row in
+    ##   unmaskedblocksL[[1]] (and then blocksL[[z]])
+    for(k in 1:(nrow(unmaskedblocksL[[2]]))){
+        ## get elements to consider
+        tmp<-which(unmaskedblocksL[[1]][,1]>=
+                       unmaskedblocksL[[2]][k,1] &
+                           unmaskedblocksL[[1]][,2]<=
+                               unmaskedblocksL[[2]][k,2])
+        passedOri<-9
+        if(unmaskedblockoriL[[2]][k]==9){
+            ## pass orientation from higher level
+            y<-3
+            while(y<=length(unmaskedblocksL) & passedOri==9){
+                if(nrow(unmaskedblocksL[[y]])==1){
+                    ## avoid taking original orientation
+                    ##  but take assigned ori instead
+                    break
+                }
+                tmp2<-which(unmaskedblocksL[[y]][,1]<=
+                                unmaskedblocksL[[2]][k,1] &
+                                    unmaskedblocksL[[y]][,2]>=
+                                        unmaskedblocksL[[2]][k,2])
+                passedOri<-unmaskedblockoriL[[y]][tmp2]
+                y<-y+1
+            }
+            ## if still 9, use ori (if ori would be 9 too then
+            ##  this loop would never have been entered)
+            if(passedOri==9){
+                passedOri<-unmaskedori
+            }
+            unmaskedblockoriL[[2]][k]<-passedOri
+        }
+        ## transfer ori to first-level blocks (this will be the expected ori)
+        unmaskedblockoriL[[1]][tmp]<-unmaskedblockoriL[[2]][k]
+    }
+
+    ## transfer expected ori to elements in blocksL[[z]]
+    expectedOri<-rep(9,length(tokeep))
+    expectedOri[tokeep]<-unmaskedblockoriL[[1]]
+    ## as simplification, assign unmaskedori to excluded elements
+    ##   (>>>> better would be to find the first clustering in
+    ##         unmaskedblocksL where they would integrate and
+    ##         take that ori, but would be a bit of work)
+    expectedOri[!tokeep]<-unmaskedori
+
+    ## ===== transfer identified rearrs to full blocksL =====
+
+    ## expand unmaskedtp to all elements (will result in gaps
+    ##   of tags when excluded block is crossed)
+    if(ncol(unmaskedtp)>0){
+        for(k in 1:ncol(unmaskedtp)){
+            tpEl<-rep(0,length(allelem))
+            tpEl[unmaskedelem]<-unmaskedtp[,k]
+            tmptp<-cbind(tmptp,tpEl)
+        }
+    }
+
+    ## add tags for masked blocks
+    maskedbl<-sort(which(tokeep==FALSE))
+    ## make tags for all elements in these blocks
+    for(k in maskedbl){
+        tpEl<-rep(0,length(allelem))
+        tmp<-(blocksL[[z]][k,1]):(blocksL[[z]][k,2])
+        tpEl[tmp]<-rep(1,length(tmp))
+        tmptp<-cbind(tmptp,tpEl)
+    }
+
+    ## expand unmaskediv to all elements (will result in gaps
+    ##   of tags when excluded block is crossed)
+    if(ncol(unmaskediv)>0){
+        for(k in 1:ncol(unmaskediv)){
+            ivEl<-rep(0,length(allelem))
+            ivEl[unmaskedelem]<-unmaskediv[,k]
+            tmpiv<-cbind(tmpiv,ivEl)
+        }
+    }
+
+    ## expand unmaskedinvelem to all elements
+    invelem[unmaskedelem]<-unmaskedinvelem
+    ## add values for excluded elements depending on their
+    ##   expected ori
+    for(k in maskedbl){
+        tmp<-(blocksL[[z]][k,1]):(blocksL[[z]][k,2])
+        if(expectedOri[k]==1){
+            invelem[tmp]<-0
+        }else if(expectedOri[k]== -1){
+            invelem[tmp]<-1
+        }else{
+            invelem[tmp]<-NA
+        }
+    }
+
+    ## expand unmaskedsplitblockid to all elements
+    splitblockid[unmaskedelem]<-unmaskedsplitblockid
+
+    ## =====
+
+    return(list(tmptp=tmptp,tmpiv=tmpiv,ori=unmaskedori,
+                invelem=invelem,splitblockid=splitblockid,
+                expectedOri=expectedOri))
 }
 
 ## ------------------------------------------------------------------

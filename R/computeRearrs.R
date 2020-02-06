@@ -28,6 +28,11 @@
 #'   rearrangement detection algorithm. \code{splitnodes = TRUE} prevents that
 #'   the same rearrangement receives tags across multiple levels of the
 #'   \emph{PQ-tree} hierarchy.
+#' @param testlim A positive integer specifying the maximum number of tests 
+#'   performed to detect markers part of complex rearrangements. A lower value 
+#'   can improve speed, but might lead to less optimal results. Set to 
+#'   \code{Inf} for exhaustive testing (not recommended for highly rearranged
+#'   genomes).
 ## @param chromLev Integer of value \code{0} or \code{1}. Indicates whether the
 ##   focal genome has been assembled to chromosome-level (\code{chromLev = 1})
 ##   or not (\code{chromLev = 0}). \code{chromLev = 1} is an experimental
@@ -249,7 +254,7 @@
 ## computeRearrs<-function(focalgenome, compgenome, doubled, remWgt = 0.05,
 ##                         splitnodes = TRUE, chromLev = 0){
 computeRearrs<-function(focalgenome, compgenome, doubled, remWgt = 0.05,
-                        splitnodes = TRUE){
+                        splitnodes = TRUE, testlim = 100){
 
     ## removed from function arguments
     chromLev <- 0
@@ -293,7 +298,13 @@ computeRearrs<-function(focalgenome, compgenome, doubled, remWgt = 0.05,
     if(!is.element(bestHitOpt,c(1,2,3))){
         stop("bestHitOpt needs to be 1, 2, or 3")
     }
-
+    if(length(testlim)!=1){
+        stop("testlim needs to be a single positive integer")
+    }
+    if(testlim<1 | !is.element(class(testlim),c("integer","numeric"))){
+        stop("testlim needs to be a single positive integer")
+    }
+    
     ## WARNINGS
     if(sum(compgenome$orientation=="-")>0 & doubled==FALSE){
         warning("sure with having no orientation information in tree?",immediate.=TRUE)
@@ -313,6 +324,10 @@ computeRearrs<-function(focalgenome, compgenome, doubled, remWgt = 0.05,
     ## initial processing
     ## -------------------------------------------
 
+    if(!is.infinite(testlim)){
+        testlim<-as.integer(testlim)
+    }
+    
     ntreecol<-ncol(compgenome)
     ## levels of hierarchy in tree (including CARs)
     nhier<-1+(ntreecol-3)/2
@@ -389,7 +404,7 @@ computeRearrs<-function(focalgenome, compgenome, doubled, remWgt = 0.05,
 
     ## identify intra-scaffold rearrangements
     SYNT<-tagRearr(SYNT,markers,tree,orientation,nhier,myscafs,
-                   splitnodes=splitnodes,remWgt=remWgt)
+                   splitnodes=splitnodes,remWgt=remWgt,testlim=testlim)
 
 
     colnames(SYNT$TLBS)<-NULL
