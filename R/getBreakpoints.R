@@ -141,10 +141,10 @@ getBreakpoints<-function(SYNT,focalgenome,ordfocal = NULL,remThld = 0){
         mpos<-which(markers$scaff==scafset[s])
 
         ## breakpoints (combined for all rearrangement classes)
-        tmpS<-cbind(SYNT$IVbS[mpos,],SYNT$TLWCbS[mpos,],
-                    SYNT$TLWSbS[mpos,],SYNT$TLBSbS[mpos,])
-        tmpE<-cbind(SYNT$IVbE[mpos,],SYNT$TLWCbE[mpos,],
-                    SYNT$TLWSbE[mpos,],SYNT$TLBSbE[mpos,])
+        tmpS<-cbind(SYNT$IVbS[mpos,,drop=FALSE],SYNT$TLWCbS[mpos,,drop=FALSE],
+                    SYNT$TLWSbS[mpos,,drop=FALSE],SYNT$TLBSbS[mpos,,drop=FALSE])
+        tmpE<-cbind(SYNT$IVbE[mpos,,drop=FALSE],SYNT$TLWCbE[mpos,,drop=FALSE],
+                    SYNT$TLWSbE[mpos,,drop=FALSE],SYNT$TLBSbE[mpos,,drop=FALSE])
         if(sum(tmpS)>remThld | sum(tmpE)>remThld){
             brpts<-getBreakpnts2BP(tmpS,tmpE,markers$start[mpos],
                                    markers$end[mpos],remThld)
