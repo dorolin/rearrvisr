@@ -5,7 +5,7 @@
 \title{Compute Rearrangements}
 \usage{
 computeRearrs(focalgenome, compgenome, doubled, remWgt = 0.05,
-  splitnodes = TRUE)
+  splitnodes = TRUE, testlim = 100)
 }
 \arguments{
 \item{focalgenome}{Data frame representing the focal genome, containing the
@@ -33,6 +33,12 @@ rearrangements that occurred one step further up the hierarchy during the
 rearrangement detection algorithm. \code{splitnodes = TRUE} prevents that
 the same rearrangement receives tags across multiple levels of the
 \emph{PQ-tree} hierarchy.}
+
+\item{testlim}{A positive integer specifying the maximum number of tests 
+performed to detect markers part of complex rearrangements. A lower value 
+can improve speed, but might lead to less optimal results. Set to 
+\code{Inf} for exhaustive testing (not recommended for highly rearranged
+genomes).}
 }
 \value{
 A list of matrices that store data on different classes of
