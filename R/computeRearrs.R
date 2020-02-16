@@ -230,7 +230,8 @@
 #'
 #' @seealso \code{\link{filterRearrs}}, \code{\link{genomeImagePlot}},
 #'   \code{\link{getBreakpoints}}, \code{\link{summarizeBlocks}},
-#'   \code{\link{genomeRearrPlot}}; \code{\link{orderGenomeMap}} to order the
+#'   \code{\link{genomeRearrPlot}}, \code{\link{summarizeRearrs}}; 
+#'   \code{\link{orderGenomeMap}} to order the
 #'   \code{focalgenome} data frame; \code{\link{convertPQtree}} or
 #'   \code{\link{genome2PQtree}} to generate the \code{compgenome} data frame.
 #'

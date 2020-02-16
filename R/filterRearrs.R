@@ -61,7 +61,14 @@
 #' @return A filtered version of \code{SYNT}. An additional list element
 #'   \code{$filter} is created that specifies the applied filter.
 #'
-#' @seealso \code{\link{computeRearrs}}, \code{\link{genomeImagePlot}}.
+#'   Note that for rearrangements that have more than one component, only the
+#'   component that falls in the specified filter range is removed. This may
+#'   result in an overestimation of the number of breakpoints when a filtered
+#'   version of \code{SYNT} is used as input for the
+#'   \code{\link{summarizeRearrs}} function.
+#'   
+#' @seealso \code{\link{computeRearrs}}, \code{\link{genomeImagePlot}},
+#'   \code{\link{summarizeRearrs}}.
 #'
 #' @examples
 #' SYNT <- computeRearrs(TOY24_focalgenome, TOY24_compgenome, doubled = TRUE)
