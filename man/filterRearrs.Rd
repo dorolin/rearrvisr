@@ -36,6 +36,12 @@ in \code{SYNT$TLWS}, \code{tlwc} is the maximum number of markers in
 \value{
 A filtered version of \code{SYNT}. An additional list element
   \code{$filter} is created that specifies the applied filter.
+
+  Note that for rearrangements that have more than one component, only the
+  component that falls in the specified filter range is removed. This may
+  result in an overestimation of the number of breakpoints when a filtered
+  version of \code{SYNT} is used as input for the
+  \code{\link{summarizeRearrs}} function.
 }
 \description{
 Remove rearrangements that comprise less than a minimum or more than a
@@ -76,5 +82,6 @@ SYNT_filt<-filterRearrs(SYNT, TOY24_focalgenome, filterMin = c(0, 0, 0, 2))
 
 }
 \seealso{
-\code{\link{computeRearrs}}, \code{\link{genomeImagePlot}}.
+\code{\link{computeRearrs}}, \code{\link{genomeImagePlot}},
+  \code{\link{summarizeRearrs}}.
 }
