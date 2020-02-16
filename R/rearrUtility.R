@@ -2629,7 +2629,8 @@ assignOri3<-function(blocksL,maskL,allelem,elemrows,
 
 ## modified order decision in case second-last block contains
 ##  only two elements (or there is only one level with one block);
-##  orientation might be modified dependent on orientation of these two elements
+##  orientation might be modified dependent on orientation of these
+##  two elements, and also dependent on number of markers per element
 assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
                            testorientation,useMask=TRUE){
 
@@ -2690,11 +2691,36 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
         ## returns $ord (orientation) and $bllev (where ori!=9 was found)
 
         if(!is.na(modblockori) & modblockori!=9){
+            ## ## count number of elements in each block
+            ##e1<-(blocksL[[bllev]][idx1,1]):(blocksL[[bllev]][idx1,2])
+            ##ne1<-0
+            ##for(j in e1){
+            ##    ne1<-ne1+myelemrows[2,j]-myelemrows[1,j]+1
+            ##}
+            ##e2<-(blocksL[[bllev]][idx2,1]):(blocksL[[bllev]][idx2,2])
+            ##ne2<-0
+            ##for(j in e2){
+            ##    ne2<-ne2+myelemrows[2,j]-myelemrows[1,j]+1
+            ##}
             ## potentially switch order
-            if(modblockori==1 & res1$ord== -1 & res2$ord== -1){
-                modblockori<- -1
-            }else if(modblockori== -1 & res1$ord==1 & res2$ord==1){
-                modblockori<-1
+            ## (also switch if smaller block has no orientation)
+            ## could be made more stringent with 2*ne1 >= ne2
+            if(modblockori==1){
+                if(res1$ord== -1 & res2$ord== -1){
+                    modblockori<- -1
+                }##else if((res1$ord== -1 & ne1 > ne2) |
+                ##        (res2$ord== -1 & ne2 > ne1)){
+                ##   ##modblockori<- -1
+                ##   modblockori<-1 ## (don't switch)
+                ##}
+            }else if(modblockori== -1){
+                if(res1$ord==1 & res2$ord==1){
+                    modblockori<-1
+                }##else if((res1$ord==1 & ne1 > ne2) |
+                ##        (res2$ord==1 & ne2 > ne1)){
+                ##   ##modblockori<-1
+                ##   modblockori<- -1 ## (don't switch)
+                ##}
             }
         }
     }else if(nfinalblocks==1){ ## bllev==1 because of while loop above
@@ -2717,6 +2743,7 @@ assignOriTwoElem<-function(blocksL,maskL,elemrows,leaves,
         mytestorientation<-testorientation[mysub]
 
         if(length(myleaves)==2 & sum(myleaves)==2){
+            ## (with only two leaves, none can be larger)
             if(!is.na(modblockori) & modblockori!=9){
                 ord1<-mytestorientation[1]
                 ord2<-mytestorientation[2]
@@ -4972,6 +4999,7 @@ keepBlocks<-function(blocksL,maskL,elemrows,allelem,leafelem,testlim=100){
             candps<-(1:ncol(putback2))[candsz==max(candsz)]
             rsm<-candps[sample.int(length(candps),1)]
             ## standard sample is NOT save if length of set can be 1
+            ## (which should not be possible)
             tokeep[putback2[,rsm]]<-TRUE
         }
     }
