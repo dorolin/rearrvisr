@@ -15,19 +15,19 @@
 #'   mandatory columns \code{$marker}, \code{$scaff}, \code{$start},
 #'   \code{$end}, and \code{$strand}, and optional further columns. Markers need
 #'   to be ordered by their map position.
-#' @param filterMin A numerical vector of the form \code{c(tlbs, tlws, tlwc,
+#' @param filterMin A numerical vector of the form \code{c(nm1, nm2, sm,
 #'   iv)} that specifies the minimum number of markers a rearrangement has to
-#'   comprise to be retained. \code{tlbs} is the minimum number of markers in
-#'   \code{SYNT$TLBS}, \code{tlws} is the minimum number of markers in
-#'   \code{SYNT$TLWS}, \code{tlwc} is the minimum number of markers in
-#'   \code{SYNT$TLWC}, and \code{iv} is the minimum number of markers in
+#'   comprise to be retained. \code{nm1} is the minimum number of markers in
+#'   \code{SYNT$NM1}, \code{nm2} is the minimum number of markers in
+#'   \code{SYNT$NM2}, \code{sm} is the minimum number of markers in
+#'   \code{SYNT$SM}, and \code{iv} is the minimum number of markers in
 #'   \code{SYNT$IV}.
-#' @param filterMax A numerical vector of the form \code{c(tlbs, tlws, tlwc,
+#' @param filterMax A numerical vector of the form \code{c(nm1, nm2, sm,
 #'   iv)} that specifies the maximum number of markers a rearrangement is
-#'   allowed to comprise to be retained. \code{tlbs} is the maximum number of
-#'   markers in \code{SYNT$TLBS}, \code{tlws} is the maximum number of markers
-#'   in \code{SYNT$TLWS}, \code{tlwc} is the maximum number of markers in
-#'   \code{SYNT$TLWC}, and \code{iv} is the maximum number of markers in
+#'   allowed to comprise to be retained. \code{nm1} is the maximum number of
+#'   markers in \code{SYNT$NM1}, \code{nm2} is the maximum number of markers
+#'   in \code{SYNT$NM2}, \code{sm} is the maximum number of markers in
+#'   \code{SYNT$SM}, and \code{iv} is the maximum number of markers in
 #'   \code{SYNT$IV}.
 #'
 #' @details
@@ -53,10 +53,8 @@
 #'   shared markers being in the same order.
 #'
 #'   Rearrangements are stored in \code{SYNT} and include the following
-#'   rearrangement classes: TLBS are translocations between CARs between focal
-#'   segments; TLWS are translocations between CARs within focal segments; TLWC
-#'   are translocations within CARs within focal segments; IV are inversions
-#'   within CARs within focal segments.
+#'   rearrangement classes: NM1 are class I nonsyntenic moves; NM2 are class II
+#'   nonsyntenic moves; SM are syntenic moves; IV are inversions.
 #'
 #' @return A filtered version of \code{SYNT}. An additional list element
 #'   \code{$filter} is created that specifies the applied filter.
@@ -126,13 +124,13 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
     ## -------------------------------------------
 
     ## subset focalgenome to those retained in SYNT
-    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$TLWC))
+    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$SM))
     markerpos<-which(!is.na(markerpos))
-    if(length(unique(markerpos)) != nrow(SYNT$TLWC)){
+    if(length(unique(markerpos)) != nrow(SYNT$SM)){
         stop("some markers in SYNT are absent in focalgenome")
     }
     markers<-focalgenome[markerpos,,drop=FALSE]
-    if(sum(rownames(SYNT$TLWC) == as.character(markers$marker)) != nrow(markers)){
+    if(sum(rownames(SYNT$SM) == as.character(markers$marker)) != nrow(markers)){
         stop("SYNT is not ordered to the subset of shared markers\n    in focalgenome. Rerun 'computeRearrs' and retry.")
     }
 
@@ -143,9 +141,9 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
 
     SYNT_filt<-SYNT
 
-    ## TLBS
+    ## NM1
     ## ----
-    if(isTRUE(ncol(SYNT$TLBS)>0) &
+    if(isTRUE(ncol(SYNT$NM1)>0) &
        (!is.na(filterMin[1]) | !is.na(filterMax[1]))){
 
         fmin<-filterMin[1]
@@ -153,8 +151,8 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
         fmax<-filterMax[1]
         fmax[is.na(fmax)]<-Inf
 
-        for(l in 1:ncol(SYNT$TLBS)){
-            tmp<-SYNT$TLBS[,l,drop=FALSE]
+        for(l in 1:ncol(SYNT$NM1)){
+            tmp<-SYNT$NM1[,l,drop=FALSE]
             if(colSums(tmp)>0){
                 GapFlank<-getGapsFlanks(tmp)
                 ## returns $Gaps and $Flanks
@@ -167,9 +165,9 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
                 ## modify values in SYNT_filt for small rearrangements
                 for(j in 1:ncol(GapFlank$Flanks[[1]])){
                     if(flanksize[j]<fmin | flanksize[j]>fmax){
-                        SYNT_filt$TLBS[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                        SYNT_filt$TLBSbS[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                        SYNT_filt$TLBSbE[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                        SYNT_filt$NM1[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                        SYNT_filt$NM1bS[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                        SYNT_filt$NM1bE[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j]),l]<-rep(0,GapFlank$Flanks[[1]][1,j])
                     }
                 }
             }
@@ -183,10 +181,10 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
         myset<-which(markers$scaff==myscafs[s])
 
 
-        ## TLWS
+        ## NM2
         ## ----
 
-        if(isTRUE(ncol(SYNT$TLWS)>0) &
+        if(isTRUE(ncol(SYNT$NM2)>0) &
            (!is.na(filterMin[2]) | !is.na(filterMax[2]))){
 
             fmin<-filterMin[2]
@@ -194,7 +192,7 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
             fmax<-filterMax[2]
             fmax[is.na(fmax)]<-Inf
 
-            testset<-SYNT$TLWS[myset,,drop=FALSE]
+            testset<-SYNT$NM2[myset,,drop=FALSE]
 
             for(l in 1:ncol(testset)){
                 tmp<-testset[,l,drop=FALSE]
@@ -210,19 +208,19 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
                     ## modify values in SYNT_filt for small rearrangements
                     for(j in 1:ncol(GapFlank$Flanks[[1]])){
                         if(flanksize[j]<fmin | flanksize[j]>fmax){
-                            SYNT_filt$TLWS[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                            SYNT_filt$TLWSbS[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                            SYNT_filt$TLWSbE[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$NM2[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$NM2bS[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$NM2bE[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
                         }
                     }
                 }
             }
         }
 
-        ## TLWC
+        ## SM
         ## ----
 
-        if(isTRUE(ncol(SYNT$TLWC)>0) &
+        if(isTRUE(ncol(SYNT$SM)>0) &
            (!is.na(filterMin[3]) | !is.na(filterMax[3]))){
 
             fmin<-filterMin[3]
@@ -230,7 +228,7 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
             fmax<-filterMax[3]
             fmax[is.na(fmax)]<-Inf
 
-            testset<-SYNT$TLWC[myset,,drop=FALSE]
+            testset<-SYNT$SM[myset,,drop=FALSE]
 
             for(l in 1:ncol(testset)){
                 tmp<-testset[,l,drop=FALSE]
@@ -246,9 +244,9 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
                     ## modify values in SYNT_filt for small rearrangements
                     for(j in 1:ncol(GapFlank$Flanks[[1]])){
                         if(flanksize[j]<fmin | flanksize[j]>fmax){
-                            SYNT_filt$TLWC[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                            SYNT_filt$TLWCbS[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
-                            SYNT_filt$TLWCbE[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$SM[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$SMbS[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
+                            SYNT_filt$SMbE[myset[(GapFlank$Flanks[[1]][2,j]):(GapFlank$Flanks[[1]][3,j])],l]<-rep(0,GapFlank$Flanks[[1]][1,j])
                         }
                     }
                 }
@@ -293,7 +291,7 @@ filterRearrs<-function(SYNT,focalgenome,filterMin=c(NA,NA,NA,NA),
     }
 
     filtspecs<-cbind(filterMin,filterMax)
-    rownames(filtspecs)<-c("TLBS","TLWS","TLWC","IV")
+    rownames(filtspecs)<-c("NM1","NM2","SM","IV")
     SYNT_filt$filter<-filtspecs
 
     return(SYNT_filt)

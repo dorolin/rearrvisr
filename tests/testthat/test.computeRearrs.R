@@ -6,7 +6,7 @@ library(rearrvisr)
 
 
 ## test results
-TLBS<-rbind(0,
+NM1<-rbind(0,
             0,
             0,
             0,
@@ -31,7 +31,7 @@ TLBS<-rbind(0,
             0,
             0)
 
-TLWS<-rbind(0,
+NM2<-rbind(0,
             0,
             0,
             0,
@@ -56,7 +56,7 @@ TLWS<-rbind(0,
             0,
             0)
 
-TLWC<-rbind(c(0.00, 0.00, 0.0),
+SM<-rbind(c(0.00, 0.00, 0.0),
             c(0.95, 0.00, 0.0),
             c(0.00, 0.05, 0.0),
             c(0.00, 0.05, 0.0),
@@ -207,11 +207,11 @@ subnode<-rbind(c(0,  0,  0,  0),
                c(0,  0,  1,  0))
 
 
-rownames(TLBS)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
+rownames(NM1)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
                   "14","17","16","15","18","21","20","22","23","24","19")
-rownames(TLWS)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
+rownames(NM2)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
                   "14","17","16","15","18","21","20","22","23","24","19")
-rownames(TLWC)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
+rownames(SM)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
                   "14","17","16","15","18","21","20","22","23","24","19")
 rownames(IV)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
                 "14","17","16","15","18","21","20","22","23","24","19")
@@ -229,13 +229,13 @@ rownames(subnode)<-c("1","7","2","6","5","4","8","9","10","3","13","12","11",
 test_that("function output of computeRearrs with test set TOY24", {
     expect_identical(computeRearrs(TOY24_focalgenome,TOY24_compgenome,
                                    doubled = TRUE,remWgt = 0.05,
-                                   splitnodes = TRUE)$TLBS, TLBS)
+                                   splitnodes = TRUE)$NM1, NM1)
     expect_identical(computeRearrs(TOY24_focalgenome,TOY24_compgenome,
                                    doubled = TRUE,remWgt = 0.05,
-                                   splitnodes = TRUE)$TLWS, TLWS)
+                                   splitnodes = TRUE)$NM2, NM2)
     expect_identical(computeRearrs(TOY24_focalgenome,TOY24_compgenome,
                                    doubled = TRUE,remWgt = 0.05,
-                                   splitnodes = TRUE)$TLWC, TLWC)
+                                   splitnodes = TRUE)$SM, SM)
     expect_identical(computeRearrs(TOY24_focalgenome,TOY24_compgenome,
                                    doubled = TRUE,remWgt = 0.05,
                                    splitnodes = TRUE)$IV, IV)

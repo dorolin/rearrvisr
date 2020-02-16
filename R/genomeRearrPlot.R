@@ -168,14 +168,14 @@
 #'   either by an insertion of another CAR or because of a change in the
 #'   hierarchical structure of the underlying \emph{PQ-tree}. Block IDs with
 #'   \code{".1"} or \code{".2"} suffixes indicate rearrangements that may arise
-#'   by either an inversion or a translocation between adjacent blocks, but that
-#'   were classified as translocation for the sake of parsimony. For
+#'   by either an inversion or a syntenic move between adjacent blocks, but that
+#'   were classified as syntenic move for the sake of parsimony. For
 #'   \emph{P-nodes}, the \code{bid} row is empty unless the node is part of a
 #'   rearrangement, in which case IDs indicate different rearrangements, but not
 #'   block order. The third row (\code{bor}) gives the block orientation within
 #'   its node. It has the same color and symbol coding as \code{nor} above. For
 #'   example, a \code{"-"} block within a \code{"+"} node indicates either an
-#'   inversion or a translocation between adjacent blocks. The fourth row
+#'   inversion or a syntenic move between adjacent blocks. The fourth row
 #'   (\code{eid}) gives the range of element IDs for each block within its node
 #'   and for its level of hierarchy. These IDs correspond to the node elements
 #'   in the odd columns of \code{compgenome} (note that some IDs within blocks
@@ -185,20 +185,19 @@
 #'   The final set of rows (\code{rea}) indicates whether blocks are part of
 #'   different classes of rearrangements. Horizontal lines that are at identical
 #'   height denote the same rearrangement (potentially disrupted by inserted
-#'   CARs). Green are translocations between CARs between focal segments (TLBS);
-#'   blue are translocations between CARs within focal segments (TLWS); purple
-#'   are translocations within CARs within focal segments (TLWC); maroon are
-#'   inversions within CARs within focal segments (IV). Inversions that involve
-#'   only a single marker (i.e., markers with switched orientation) are
-#'   indicated by a short vertical rather than a horizontal line. Lighter
-#'   coloration denotes smaller weights for rearrangement tags in the respective
-#'   matrices in \code{BLOCKS}. Unless the argument \code{remThld} is set to a
-#'   value smaller than that of \code{remWgt} used in the
-#'   \code{\link{computeRearrs}} function, only lines for blocks that are more
-#'   parsimonious to have changed position relative to alternative blocks are
-#'   plotted. If \code{simplifyTags = FALSE}, all tags for TLWS and TLWC will be
-#'   plotted for completeness, i.e., including those that are duplicated due to
-#'   the functioning of the underlying algorithm in \code{\link{computeRearrs}}.
+#'   CARs). Green are class I nonsyntenic moves (NM1); blue are class II
+#'   nonsyntenic moves (NM2); purple are syntenic moves (SM); maroon are
+#'   inversions (IV). Inversions that involve only a single marker (i.e.,
+#'   markers with switched orientation) are indicated by a short vertical rather
+#'   than a horizontal line. Lighter coloration denotes smaller weights for
+#'   rearrangement tags in the respective matrices in \code{BLOCKS}. Unless the
+#'   argument \code{remThld} is set to a value smaller than that of
+#'   \code{remWgt} used in the \code{\link{computeRearrs}} function, only lines
+#'   for blocks that are more parsimonious to have changed position relative to
+#'   alternative blocks are plotted. If \code{simplifyTags = FALSE}, all tags
+#'   for NM2 and SM will be plotted for completeness, i.e., including those that
+#'   are duplicated due to the functioning of the underlying algorithm in
+#'   \code{\link{computeRearrs}}.
 #'
 #' @seealso \code{\link{checkInfile}}, \code{\link{computeRearrs}},
 #'   \code{\link{summarizeBlocks}}, \code{\link{genomeImagePlot}}. For more
@@ -428,7 +427,7 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
     ## initial processing
     ## -------------------------------------------
 
-    ## simplify BLOCK tags for TLWS and TLWC
+    ## simplify BLOCK tags for NM2 and SM
     if(simplifyTags==TRUE){
         BLOCKS<-simplifyBlockTags(BLOCKS,remThld)
     }
@@ -522,11 +521,11 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
     colorbreaks<-seq(-0.5,1.5,0.2) ## vals are only [0,1], so colors are less extreme
     ## reds for IV
     rPal<-colorRampPalette(c("#FFAAAA","#800000")) ## "#FF8080"
-    ## purples for TLWC
+    ## purples for SM
     pPal<-colorRampPalette(c("#CCAAFF","#330080")) ## "#B380FF"
-    ## blues for TLWS
+    ## blues for NM2
     bPal<-colorRampPalette(c("#AACCFF","#003380")) ## "#80B3FF"
-    ## greens for TLBS
+    ## greens for NM1
     ##gPal<-colorRampPalette(c("#AAFFEE","#008066")) ## "#80FFE6"
     gPal<-colorRampPalette(c("#AAFFAA","#008000")) ## "#2AFF2A"
 
@@ -760,15 +759,15 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
         myy1<-myy2-space$rearr
 
         if(plotelem[5]==1){
-            ## TLBS
-            if(ncol(BLOCKS[[s]]$TLBS)>0){
-                for(l in 1:ncol(BLOCKS[[s]]$TLBS)){
-                    if(sum(BLOCKS[[s]]$TLBS[,l]>remThld)>0){
-                        for(k in 1:nrow(BLOCKS[[s]]$TLBS)){
-                            if(BLOCKS[[s]]$TLBS[k,l]>remThld){
+            ## NM1
+            if(ncol(BLOCKS[[s]]$NM1)>0){
+                for(l in 1:ncol(BLOCKS[[s]]$NM1)){
+                    if(sum(BLOCKS[[s]]$NM1[,l]>remThld)>0){
+                        for(k in 1:nrow(BLOCKS[[s]]$NM1)){
+                            if(BLOCKS[[s]]$NM1[k,l]>remThld){
                                 rect(xleft=tmpx[k]-blockwidth,ybottom=myy1,
                                      xright=tmpx[k],ytop=myy2,
-                                     col=gPal(15)[cut(BLOCKS[[s]]$TLBS[k,l],
+                                     col=gPal(15)[cut(BLOCKS[[s]]$NM1[k,l],
                                          breaks=colorbreaks)],border=NA)
                             }
                         }
@@ -778,15 +777,15 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
                 }
             }
 
-            ## TLWS
-            if(ncol(BLOCKS[[s]]$TLWS)>0){
-                for(l in 1:ncol(BLOCKS[[s]]$TLWS)){
-                    if(sum(BLOCKS[[s]]$TLWS[,l]>remThld)>0){
-                        for(k in 1:nrow(BLOCKS[[s]]$TLWS)){
-                            if(BLOCKS[[s]]$TLWS[k,l]>remThld){
+            ## NM2
+            if(ncol(BLOCKS[[s]]$NM2)>0){
+                for(l in 1:ncol(BLOCKS[[s]]$NM2)){
+                    if(sum(BLOCKS[[s]]$NM2[,l]>remThld)>0){
+                        for(k in 1:nrow(BLOCKS[[s]]$NM2)){
+                            if(BLOCKS[[s]]$NM2[k,l]>remThld){
                                 rect(xleft=tmpx[k]-blockwidth,ybottom=myy1,
                                      xright=tmpx[k],ytop=myy2,
-                                     col=bPal(15)[cut(BLOCKS[[s]]$TLWS[k,l],
+                                     col=bPal(15)[cut(BLOCKS[[s]]$NM2[k,l],
                                          breaks=colorbreaks)],border=NA)
                             }
                         }
@@ -796,15 +795,15 @@ genomeRearrPlot<-function(BLOCKS,compgenome,ordfocal,
                 }
             }
 
-            ## TLWC
-            if(ncol(BLOCKS[[s]]$TLWC)>0){
-                for(l in 1:ncol(BLOCKS[[s]]$TLWC)){
-                    if(sum(BLOCKS[[s]]$TLWC[,l]>remThld)>0){
-                        for(k in 1:nrow(BLOCKS[[s]]$TLWC)){
-                            if(BLOCKS[[s]]$TLWC[k,l]>remThld){
+            ## SM
+            if(ncol(BLOCKS[[s]]$SM)>0){
+                for(l in 1:ncol(BLOCKS[[s]]$SM)){
+                    if(sum(BLOCKS[[s]]$SM[,l]>remThld)>0){
+                        for(k in 1:nrow(BLOCKS[[s]]$SM)){
+                            if(BLOCKS[[s]]$SM[k,l]>remThld){
                                 rect(xleft=tmpx[k]-blockwidth,ybottom=myy1,
                                      xright=tmpx[k],ytop=myy2,
-                                     col=pPal(15)[cut(BLOCKS[[s]]$TLWC[k,l],
+                                     col=pPal(15)[cut(BLOCKS[[s]]$SM[k,l],
                                          breaks=colorbreaks)],border=NA)
                             }
                         }

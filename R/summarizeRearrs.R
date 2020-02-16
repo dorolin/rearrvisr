@@ -142,13 +142,13 @@ summarizeRearrs<-function(SYNT, focalgenome, compgenome, ordfocal,
     for(s in 1:length(ordfocal)){
         ## rearrangement events
         ## --------------------
-        ## TLBS should give min number per chromosome
-        allBS<-sum(apply(myblocks[[s]]$TLBS,2,function(x) max(x)>remWgt))
-        allWS<-sum(apply(myblocks[[s]]$TLWS,2,function(x) max(x)>remWgt))
+        ## NM1 should give min number per chromosome
+        allBS<-sum(apply(myblocks[[s]]$NM1,2,function(x) max(x)>remWgt))
+        allWS<-sum(apply(myblocks[[s]]$NM2,2,function(x) max(x)>remWgt))
         rearrsum[s,1]<-max(allBS,allWS)
-        ## special counting for TLWC (potential underestimate for P-nodes)
-        fullWC<-sum(apply(myblocks[[s]]$TLWC,2,function(x) max(x)>=1-remWgt))
-        halfWC<-sum(apply(myblocks[[s]]$TLWC,2,function(x) max(x)==0.5))/2
+        ## special counting for SM (potential underestimate for P-nodes)
+        fullWC<-sum(apply(myblocks[[s]]$SM,2,function(x) max(x)>=1-remWgt))
+        halfWC<-sum(apply(myblocks[[s]]$SM,2,function(x) max(x)==0.5))/2
         rearrsum[s,2]<-fullWC+ceiling(halfWC)
         ## IV and IVsm
         allIV<-sum(apply(myblocks[[s]]$IV,2,function(x) max(x)>remWgt))
@@ -164,13 +164,13 @@ summarizeRearrs<-function(SYNT, focalgenome, compgenome, ordfocal,
         }
     }
 
-    ## >>>> note that for TLWS, and for TLWC for P-nodes, tags for
+    ## >>>> note that for NM2, and for SM for P-nodes, tags for
     ##      one event are in the same column (e.g., 0.05 and 0.95,
     ##      but also 0.5 tags as they are separated by gaps anyway);
-    ##      for TLWC for Q-nodes, tags for same event can be in separate
-    ##      columns (e.g., two columns per transposition pair, one with
+    ##      for SM for Q-nodes, tags for same event can be in separate
+    ##      columns (e.g., two columns per flanks pair, one with
     ##      0.05 and one with 0.95 tags, or two columns with 0.5 tags)
-    ## >>>> this can lead to underestimation of TLWC's with P-nodes
+    ## >>>> this can lead to underestimation of SM's with P-nodes
     ##      with the code above (will require >1 0.5'er event)
 
     return(rearrsum)

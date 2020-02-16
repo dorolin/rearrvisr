@@ -16,7 +16,7 @@
 
 ## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ## potential further improvements:
-##   - decision inversions versus transpositions
+##   - decision inversions versus syntenic moves
 ##   - add 'best hits' for flank/insert decision for P-nodes
 ##   - with duplicated elements: could take possibility of
 ##     inversions into account for decision which part has been
@@ -100,7 +100,7 @@ getSingles<-function(tree){
 ## ------------------------------------------------------------------------
 
 
-## additional processing transpositions (TPs)
+## additional processing syntenic moves (TPs)
 tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
                  testorientation,preMasks,splitnodes,remWgt=0.05,
                  testlim=100){
@@ -130,7 +130,7 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
     if(node=="P"){
         ## for P-nodes:
         ##  either flanking elements or the inserted element
-        ##  might have been the source of transposition
+        ##  might have been the source of syntenic move
 
         subtagsmark<-integer(length(tmprows))
         elemids<-integer(length(tmprows))
@@ -168,10 +168,10 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
             ## returns $TPfilt and $subtags
             ## (matrix with tags for inserts/gaps and subnode IDs)
 
-            ## append columns to TLWC
-            tp<-matrix(0,nrow=nrow(synt$TLWC),ncol=ncol(TPtags$TPfilt))
+            ## append columns to SM
+            tp<-matrix(0,nrow=nrow(synt$SM),ncol=ncol(TPtags$TPfilt))
             tp[tmprows,]<-TPtags$TPfilt
-            synt$TLWC<-cbind(synt$TLWC,tp)
+            synt$SM<-cbind(synt$SM,tp)
 
             ## store subnode IDs for markers that have received a TP tag
             subtagsmark<-TPtags$subtags
@@ -179,13 +179,13 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
             ## obtain breakpoints for TPtags$TPfilt
             bpt<-getBreakpntsSE(TPtags$TPfilt)
             ## returns $bptS and $bptE
-            ## append columns to TLWCbS/TLWCbE
-            bptS<-matrix(0,nrow=nrow(synt$TLWCbS),ncol=ncol(bpt$bptS))
+            ## append columns to SMbS/SMbE
+            bptS<-matrix(0,nrow=nrow(synt$SMbS),ncol=ncol(bpt$bptS))
             bptS[tmprows,]<-bpt$bptS
-            synt$TLWCbS<-cbind(synt$TLWCbS,bptS)
-            bptE<-matrix(0,nrow=nrow(synt$TLWCbE),ncol=ncol(bpt$bptE))
+            synt$SMbS<-cbind(synt$SMbS,bptS)
+            bptE<-matrix(0,nrow=nrow(synt$SMbE),ncol=ncol(bpt$bptE))
             bptE[tmprows,]<-bpt$bptE
-            synt$TLWCbE<-cbind(synt$TLWCbE,bptE)
+            synt$SMbE<-cbind(synt$SMbE,bptE)
         } ## close nrow(TPelem)>0
         synt$subnode[tmprows,n]<-subtagsmark
         synt$blockid[tmprows,n]<-elemids
@@ -585,12 +585,12 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         ##       would be recovered at next lower level
         ##  note that here, unlike for flanks of cars or
         ##   P-nodes, only the tagged piece of a two-element-
-        ##   translocation, or the tagged parts when segment of
+        ##   syntenic move, or the tagged parts when segment of
         ##   largest block has been removed, gets a subnode ID
         subtags<-integer(length(allelem))
         if(ncol(tmptp)>0){
             tagmat<-tmptp
-            ## exclude removed parts of two-element-translocation
+            ## exclude removed parts of two-element-syntenic move
             ##  or when segment of largest block has been untagged
             if(remWgt>0){
                 tagmat[tagmat<=remWgt]<-0
@@ -693,18 +693,18 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
         ## get positions in tree and bind tags to synt,
         ##  and obtain breakpoints
         if(ncol(tpmark)>0){
-            tptree<-matrix(0,nrow=nrow(synt$TLWC),ncol=ncol(tpmark))
+            tptree<-matrix(0,nrow=nrow(synt$SM),ncol=ncol(tpmark))
             tptree[tmprows,]<-tpmark
-            synt$TLWC<-cbind(synt$TLWC,tptree)
+            synt$SM<-cbind(synt$SM,tptree)
             ## obtain breakpoints for tpmark
             bpt<-getBreakpntsSE(tpmark)
             ## returns $bptS and $bptE
-            bptS<-matrix(0,nrow=nrow(synt$TLWCbS),ncol=ncol(bpt$bptS))
+            bptS<-matrix(0,nrow=nrow(synt$SMbS),ncol=ncol(bpt$bptS))
             bptS[tmprows,]<-bpt$bptS
-            synt$TLWCbS<-cbind(synt$TLWCbS,bptS)
-            bptE<-matrix(0,nrow=nrow(synt$TLWCbE),ncol=ncol(bpt$bptE))
+            synt$SMbS<-cbind(synt$SMbS,bptS)
+            bptE<-matrix(0,nrow=nrow(synt$SMbE),ncol=ncol(bpt$bptE))
             bptE[tmprows,]<-bpt$bptE
-            synt$TLWCbE<-cbind(synt$TLWCbE,bptE)
+            synt$SMbE<-cbind(synt$SMbE,bptE)
         }
         if(ncol(ivmark)>0){
             ivtree<-matrix(0,nrow=nrow(synt$IV),ncol=ncol(ivmark))
@@ -732,7 +732,7 @@ tagTP2<-function(synt,allelem,tmprows,elemrows,TPelem,n,node,leaves,
 ## ------------------------------------------------------------------------
 
 
-## check if CAR - scaffold assignments indicate translocations
+## check if CAR - scaffold assignments indicate nonsyntenic moves
 tagTLcar2<-function(markers,tree,myscafs,mycars,chromLev=0){
     ## - for each CAR, only certain number/combination of boundaries to
     ##   other CARs are allowed
@@ -1426,8 +1426,8 @@ tagRearr<-function(SYNT,markers,tree,orientation,nhier,myscafs,splitnodes,
         suborientation<-orientation[myset]
 
         ## go through levels of hierarchy and test for synteny compliance
-        TLWC<-matrix(NA,ncol=0,nrow=nrow(subtree))
-        rownames(TLWC)<-subtree$marker
+        SM<-matrix(NA,ncol=0,nrow=nrow(subtree))
+        rownames(SM)<-subtree$marker
         IV<-matrix(NA,ncol=0,nrow=nrow(subtree))
         rownames(IV)<-subtree$marker
         nodeori<-matrix(NA,nrow=nrow(subtree),ncol=nhier)
@@ -1437,10 +1437,10 @@ tagRearr<-function(SYNT,markers,tree,orientation,nhier,myscafs,splitnodes,
         ## pass subnode ids from CAR level
         subnode[,1]<-SYNT$subnode[myset,1]
 
-        synt<-list(TLWC=TLWC,IV=IV,TLWCbS=TLWC,TLWCbE=TLWC,IVbS=IV,
+        synt<-list(SM=SM,IV=IV,SMbS=SM,SMbE=SM,IVbS=IV,
                    IVbE=IV,nodeori=nodeori,blockori=nodeori,
                    blockid=nodeori,premask=nodeori,subnode=subnode)
-        rm(TLWC,IV,nodeori,subnode)
+        rm(SM,IV,nodeori,subnode)
 
         ## ----
         ## CAR level already done
@@ -1548,12 +1548,12 @@ tagRearr<-function(SYNT,markers,tree,orientation,nhier,myscafs,splitnodes,
             } ## end loop over p in 1:length(uniprev)
         } ## end loop over n in 2:nhier
 
-        ## adjust column dimensions for TLWC and IV and their
+        ## adjust column dimensions for SM and IV and their
         ##  breakpoints and append data to SYNT
-        SYNT$TLWC<-appendData(SYNT$TLWC,synt$TLWC)
+        SYNT$SM<-appendData(SYNT$SM,synt$SM)
         SYNT$IV<-appendData(SYNT$IV,synt$IV)
-        SYNT$TLWCbS<-appendData(SYNT$TLWCbS,synt$TLWCbS)
-        SYNT$TLWCbE<-appendData(SYNT$TLWCbE,synt$TLWCbE)
+        SYNT$SMbS<-appendData(SYNT$SMbS,synt$SMbS)
+        SYNT$SMbE<-appendData(SYNT$SMbE,synt$SMbE)
         SYNT$IVbS<-appendData(SYNT$IVbS,synt$IVbS)
         SYNT$IVbE<-appendData(SYNT$IVbE,synt$IVbE)
 
@@ -1586,12 +1586,12 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
         stop("Require matrix as input")
     }
     if(ncol(TLL$TLbetween)==0){
-        SYNT$TLBS<-matrix(NA,ncol=0,nrow=nrow(markers))
-        rownames(SYNT$TLBS)<-rownames(TLL$TLbetween)
+        SYNT$NM1<-matrix(NA,ncol=0,nrow=nrow(markers))
+        rownames(SYNT$NM1)<-rownames(TLL$TLbetween)
     }
     if(ncol(TLL$TLwithin)==0){
-        SYNT$TLWS<-matrix(NA,ncol=0,nrow=nrow(markers))
-        rownames(SYNT$TLWS)<-rownames(TLL$TLwithin)
+        SYNT$NM2<-matrix(NA,ncol=0,nrow=nrow(markers))
+        rownames(SYNT$NM2)<-rownames(TLL$TLwithin)
     }
     if(ncol(TLL$TLbetween)==0 & ncol(TLL$TLwithin)==0){
         return(SYNT)
@@ -1611,36 +1611,36 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
         if(length(myset)==0){
             stop(paste("Scaffold",myscafs[s],"has no marker"))
         }
-        TLWS<-TLL$TLwithin[myset,,drop=FALSE]
-        TLBS<-TLL$TLbetween[myset,,drop=FALSE]
+        NM2<-TLL$TLwithin[myset,,drop=FALSE]
+        NM1<-TLL$TLbetween[myset,,drop=FALSE]
 
-        ## remove columns that are zero in TLWS
-        tmp<-which(colSums(TLWS)!=0)
-        TLWS<-TLWS[,tmp,drop=FALSE]
+        ## remove columns that are zero in NM2
+        tmp<-which(colSums(NM2)!=0)
+        NM2<-NM2[,tmp,drop=FALSE]
 
-        ## storage for all kept tags TLWS
+        ## storage for all kept tags NM2
         TLWfiltF<-matrix(NA,ncol=0,nrow=length(myset)) ## flanks (tmp)
         TLWkeptF<-matrix(NA,ncol=0,nrow=length(myset)) ## flanks
         TLWremF<-matrix(NA,ncol=0,nrow=length(myset)) ## removed flanks
         TLWkeptI<-matrix(NA,ncol=0,nrow=length(myset)) ## inserts
         TLWremI<-matrix(NA,ncol=0,nrow=length(myset)) ## removed inserts (tmp)
-        ## to modify in TLBS
+        ## to modify in NM1
         toMod<-integer()
 
-        ## Translocations within scaffolds
+        ## nonsyntenic move within scaffolds
         ## -------------------------------
         ## go through all flanks and make tags for either flanks or inserts
-        if(isTRUE(ncol(TLWS)>0)){
+        if(isTRUE(ncol(NM2)>0)){
 
-            GapFlank<-getGapsFlanks(TLWS)
+            GapFlank<-getGapsFlanks(NM2)
             ## returns $Gaps and $Flanks
 
             ## keep flanks only if flank small relative to insert
             ## keep insert otherwise
 
-            for(i in 1:ncol(TLWS)){
+            for(i in 1:ncol(NM2)){
 
-                flankCar<-unique(tree$car[myset][TLWS[,i]>0])
+                flankCar<-unique(tree$car[myset][NM2[,i]>0])
                 if(length(flankCar)!=1){
                     stop("Flanking CAR is not unique")
                 }
@@ -1671,8 +1671,8 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
                     ## >>> this is a bit more complicated so moved elements
                     ##     of older function here that might be a bit
                     ##     more cumbersome but have been tested already
-                    ## tmpFlanks<-matrix(0,nrow=nrow(TLWS),ncol=0)
-                    tmpGaps<-matrix(0,nrow=nrow(TLWS),
+                    ## tmpFlanks<-matrix(0,nrow=nrow(NM2),ncol=0)
+                    tmpGaps<-matrix(0,nrow=nrow(NM2),
                                     ncol=ncol(GapFlank$Gaps[[i]]))
                     GapsToRm<-numeric()
 
@@ -1730,7 +1730,7 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
                 }else{ ## close ncol(GapFlank$Flanks[[i]])>2
                     stop("Expected at least two flanks")
                 }
-            } ## close loop over ncol(TLWS)
+            } ## close loop over ncol(NM2)
 
             ## decide which part of flank to keep
             if(ncol(TLWfiltF)>0){
@@ -1828,7 +1828,7 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
                     }
                 } ## close loop over ncol(TLWfiltF)
             } ## close if(ncol(TLWfiltF)>0){
-        } ## close if(isTRUE(ncol(TLWS)>0)){
+        } ## close if(isTRUE(ncol(NM2)>0)){
 
         ## test for immediate adjacencies of flanks with 1.0 tags
         ##  (probably rare event >>>> would need some more testing)
@@ -1990,25 +1990,25 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
         }
 
         ## adjust column dimensions and append data to SYNT
-        SYNT$TLWS<-appendData(SYNT$TLWS,TLWfilt)
+        SYNT$NM2<-appendData(SYNT$NM2,TLWfilt)
 
         ## obtain breakpoints for TLWcar
         bptW<-getBreakpntsSE(TLWfilt)
         ## returns $bptS and $bptE
         ## adjust column dimensions and append data to SYNT
-        SYNT$TLWSbS<-appendData(SYNT$TLWSbS,bptW$bptS)
-        SYNT$TLWSbE<-appendData(SYNT$TLWSbE,bptW$bptE)
+        SYNT$NM2bS<-appendData(SYNT$NM2bS,bptW$bptS)
+        SYNT$NM2bE<-appendData(SYNT$NM2bE,bptW$bptE)
 
 
-        ## Translocations between scaffolds
+        ## nonsyntenic move between scaffolds
         ## --------------------------------
-        if(isTRUE(ncol(TLBS)>0)){
+        if(isTRUE(ncol(NM1)>0)){
 
-            TLcand<-as.vector(which(colSums(TLBS)!=0))
+            TLcand<-as.vector(which(colSums(NM1)!=0))
 
             if(length(TLcand)>0){
 
-                GapFlank<-getGapsFlanks(TLBS[,TLcand,drop=FALSE])
+                GapFlank<-getGapsFlanks(NM1[,TLcand,drop=FALSE])
                 ## returns $Gaps and $Flanks
 
                 ## keep flank only if flank is not a best hit
@@ -2016,7 +2016,7 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
 
                 for(i in 1:length(TLcand)){
 
-                    flankCar<-unique(tree$car[myset][TLBS[,TLcand[i]]>0])
+                    flankCar<-unique(tree$car[myset][NM1[,TLcand[i]]>0])
                     if(length(flankCar)!=1){
                         stop("Flanking CAR is not unique")
                     }
@@ -2025,7 +2025,7 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
                     ## check whether flanks are best hits
                     flBH<-scafcarbest[s,flankCarPos]>=bestHitOpt
 
-                    if(isTRUE(flBH)){ ## to modify in TLBS, if any
+                    if(isTRUE(flBH)){ ## to modify in NM1, if any
                         toMod<-c(toMod,TLcand[i])
                     }
                 }
@@ -2052,18 +2052,18 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
         bptB<-getBreakpntsSE(TLL$TLbetween[myset,,drop=FALSE]/2)
         ## returns $bptS and $bptE
         ## adjust column dimensions and append data to SYNT
-        SYNT$TLBSbS<-appendData(SYNT$TLBSbS,bptB$bptS)
-        SYNT$TLBSbE<-appendData(SYNT$TLBSbE,bptB$bptE)
+        SYNT$NM1bS<-appendData(SYNT$NM1bS,bptB$bptS)
+        SYNT$NM1bE<-appendData(SYNT$NM1bE,bptB$bptE)
     }
 
-    SYNT$TLBS<-TLL$TLbetween/2
+    SYNT$NM1<-TLL$TLbetween/2
 
 
-    rownames(SYNT$TLWS)<-rownames(TLL$TLwithin)
-    rownames(SYNT$TLWSbS)<-rownames(TLL$TLwithin)
-    rownames(SYNT$TLWSbE)<-rownames(TLL$TLwithin)
-    rownames(SYNT$TLBSbS)<-rownames(TLL$TLwithin)
-    rownames(SYNT$TLBSbE)<-rownames(TLL$TLwithin)
+    rownames(SYNT$NM2)<-rownames(TLL$TLwithin)
+    rownames(SYNT$NM2bS)<-rownames(TLL$TLwithin)
+    rownames(SYNT$NM2bE)<-rownames(TLL$TLwithin)
+    rownames(SYNT$NM1bS)<-rownames(TLL$TLwithin)
+    rownames(SYNT$NM1bE)<-rownames(TLL$TLwithin)
 
     return(SYNT)
 }
@@ -2191,9 +2191,9 @@ getBestHits<-function(markers,tree,myscafs,mycars){
     ## ## make sure that no car has more than one scaffold assigned
     ## ## (it's okay if a scaffold has multiple cars assigned)
     ## ## >>>> Note that this can potentially lead to tagging of
-    ## ##      a huge part of a scaffold as TLBS if a car merges
+    ## ##      a huge part of a scaffold as NM1 if a car merges
     ## ##      two scaffolds but it just happened that there were
-    ## ##      small translocations of other cars at the scaffold ends
+    ## ##      small nonsyntenic moves of other cars at the scaffold ends
     ## ##      so that they cannot be joined; has to be addressed
     ## ##      together with the tests in 'filterCars3()'
     ## for(i in 1:length(mycars)){
@@ -2927,9 +2927,9 @@ checkAdjAscend<-function(blocks,mask,nelem,usePreMask=FALSE,
         ## go through adjacencies and tag elements in-between
         ## >>> this might make more tags than necessary, but also avoid
         ##     potentially complicated decision which block has been
-        ##     transposed as they will often be multiple options
+        ##     moved as they will often be multiple options
         ## >>> could be interesting to store info about the number of
-        ##     breaks in ordering though (i.e., # columns in TLWC)
+        ##     breaks in ordering though (i.e., # columns in SM)
         if(sum(adjA)>1){
             tmpstart<-which(adjA[,1]==1)
             tmpend<-which(adjA[,2]==1)
@@ -3122,9 +3122,9 @@ checkAdjDescend<-function(blocks,mask,nelem,usePreMask=FALSE,
         ## go through adjacencies and tag elements in-between
         ## >>> this might make more tags than necessary, but also avoid
         ##     potentially complicated decision which block has been
-        ##     transposed as they will often be multiple options
+        ##     moved as they will often be multiple options
         ## >>> could be interesting to store info about the number of
-        ##     breaks in ordering though (i.e., # columns in TLWC)
+        ##     breaks in ordering though (i.e., # columns in SM)
         if(sum(adjD)>1){
             tmpstart<-which(adjD[,1]==1)
             tmpend<-which(adjD[,2]==1)
@@ -3203,13 +3203,13 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                             inv<-0
                         }else if(sum(blocksL[[blocklev-1]][tmp1,5]!=0)==0){
                             ## all elements are nodes
-                            ## >>>> might be a transposition too
+                            ## >>>> might be a syntenic move too
                             inv<-1
                         }else{
                             ## at least one leaf:
                             ## -> take orientation into account
 
-                            ## always transposition unless both
+                            ## always syntenic move unless both
                             ##  elements have negative orientation;
                             ##  with blocklev==2, all elements are leaves
                             ##  and majority of markers for each element have
@@ -3234,11 +3234,11 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                                         ## -> inversion
                                         inv<-1
                                     }else{
-                                        ## -> transposition
+                                        ## -> syntenic move
                                         inv<-0
                                     }
                                 }else{
-                                    ## -> transposition
+                                    ## -> syntenic move
                                     inv<-0
                                 }
                             }else{ ## blocklev>2
@@ -3279,12 +3279,12 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                             inv<-0
                         }else if(blocksL[[blocklev]][k,5]==0){
                             ## all elements are nodes
-                            ## >>>> might be a transposition too
+                            ## >>>> might be a syntenic move too
                             inv<-1
                         }else{
                             ## at least one leaf
 
-                            ## always transposition unless all are leaves
+                            ## always syntenic move unless all are leaves
                             ##  and all have negative orientation
 
                             ## get positions of markers
@@ -3301,11 +3301,11 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                                     ## -> inversion
                                     inv<-1
                                 }else{
-                                    ## -> transposition
+                                    ## -> syntenic move
                                     inv<-0
                                 }
                             }else{
-                                ## -> transposition
+                                ## -> syntenic move
                                 inv<-0
                             }
                         }
@@ -3442,7 +3442,7 @@ checkOriAscend<-function(blocksL,blocklev,allelem,dupli,
                     ## bind tags together
                     tpElA<-cbind(tpElA,tp1,tp2)
                     ## -> also need to switch orientation of
-                    ##    blockrow if classified as transposition
+                    ##    blockrow if classified as syntenic move
                     ##    to correctly determine inversions on
                     ##    lower level of hierarchy
                     blockoriL[[blocklev]][k]<-1
@@ -3516,13 +3516,13 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                             inv<-0
                         }else if(sum(blocksL[[blocklev-1]][tmp1,5]!=0)==0){
                             ## all elements are nodes
-                            ## >>>> might be a transposition too
+                            ## >>>> might be a syntenic move too
                             inv<-1
                         }else{
                             ## at least one leaf:
                             ## -> take orientation into account
 
-                            ## always transposition unless both
+                            ## always syntenic move unless both
                             ##  elements have positive orientation;
                             ##  with blocklev==2, all elements are leaves
                             ##  and majority of markers for each element have
@@ -3547,11 +3547,11 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                                         ## -> inversion
                                         inv<-1
                                     }else{
-                                        ## -> transposition
+                                        ## -> syntenic move
                                         inv<-0
                                     }
                                 }else{
-                                    ## -> transposition
+                                    ## -> syntenic move
                                     inv<-0
                                 }
                             }else{ ## blocklev>2
@@ -3592,12 +3592,12 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                             inv<-0
                         }else if(blocksL[[blocklev]][k,5]==0){
                             ## all elements are nodes
-                            ## >>>> might be a transposition too
+                            ## >>>> might be a syntenic move too
                             inv<-1
                         }else{
                             ## at least one leaf
 
-                            ## always transposition unless all are leaves
+                            ## always syntenic move unless all are leaves
                             ##  and all have positive orientation
 
                             ## get positions of markers
@@ -3614,11 +3614,11 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                                     ## -> inversion
                                     inv<-1
                                 }else{
-                                    ## -> transposition
+                                    ## -> syntenic move
                                     inv<-0
                                 }
                             }else{
-                                ## -> transposition
+                                ## -> syntenic move
                                 inv<-0
                             }
                         }
@@ -3755,7 +3755,7 @@ checkOriDescend<-function(blocksL,blocklev,allelem,dupli,
                     ## bind tags together
                     tpElD<-cbind(tpElD,tp1,tp2)
                     ## -> also need to switch orientation of
-                    ##    blockrow if classified as transposition
+                    ##    blockrow if classified as syntenic move
                     ##    to correctly determine inversions on
                     ##    lower level of hierarchy
                     blockoriL[[blocklev]][k]<- -1
@@ -4787,7 +4787,7 @@ adjustTPtags<-function(tpmat,blocks,mask,blocks1,elemrows,remWgt){
             tpmat[tpmat[,1]==1,1]<-0.5
             tpmat[tpmat[,2]==1,2]<-0.5
             if(sum(rowSums(tpmat)==0.5)!=nrow(tpmat)){
-                stop("Tags for transposed blocks are not as they should be")
+                stop("Tags for moved blocks are not as they should be")
             }
         }
         ## note: if length(untag)!=1, don't adjust tags,

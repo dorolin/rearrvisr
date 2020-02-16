@@ -49,20 +49,20 @@ A list of matrices that store data on different classes of
   frames. The matrices contain all markers common to \code{focalgenome} and
   \code{compgenome}, and are ordered by their position in \code{focalgenome}.
 
-  The list elements \code{$TLBS}, \code{$TLWS}, \code{$TLWC}, and \code{$IV}
-  are numeric matrices that store identified rearrangements. \code{$TLBS}
+  The list elements \code{$NM1}, \code{$NM2}, \code{$SM}, and \code{$IV}
+  are numeric matrices that store identified rearrangements. \code{$NM1}
   stores \code{T}rans\code{L}ocations between CARs \code{B}etween focal
-  \code{S}egments; \code{$TLWS} stores \code{T}rans\code{L}ocations between
-  CARs \code{W}ithin focal \code{S}egments; \code{$TLWC} stores
+  \code{S}egments; \code{$NM2} stores \code{T}rans\code{L}ocations between
+  CARs \code{W}ithin focal \code{S}egments; \code{$SM} stores
   \code{T}rans\code{L}ocations within CARs \code{W}ithin focal
   \code{S}egments; \code{$IV} stores \code{I}n\code{V}ersions within CARs
   within focal segments. See the package vignette for a detailed explanation
   of these classes of rearrangements.
 
   Each rearrangement is represented by a separate column. Except for
-  \code{TLBS}, which are identified across all focal segments, columns for
+  \code{NM1}, which are identified across all focal segments, columns for
   individual focal segments are joined across rows to save space (i.e., for
-  \code{TLWS}, \code{TLWC}, and \code{IV}, which are identified within focal
+  \code{NM2}, \code{SM}, and \code{IV}, which are identified within focal
   segments). To preserve the tabular format, these matrices are padded by
   zeros for focal segments with a non-maximal number of rearrangements, if
   necessary. If no rearrangements were detected for a certain class, the
@@ -72,19 +72,19 @@ A list of matrices that store data on different classes of
   rearrangement is split into several parts through an insertion of a
   different CAR, or when a rearrangement has an upstream and a downstream
   component (i.e., when alternative sets of markers may have caused an
-  apparent translocation). Note that some columns in \code{$TLWS} or
-  \code{$TLWC} may be duplicated for a particular focal segment due to the
-  functioning of the underlying algorithm; although corresponding to the
-  same rearrangement, these duplicated columns are nevertheless included for
-  completeness.
+  apparent nonsyntenic or syntenic move). Note that some columns in
+  \code{$NM2} or \code{$SM} may be duplicated for a particular focal segment
+  due to the functioning of the underlying algorithm; although corresponding
+  to the same rearrangement, these duplicated columns are nevertheless
+  included for completeness.
 
-  For \code{TLBS}, markers part of a translocation have a value of \code{0.5}
-  if non of the involved CAR fragments is a focal segment - CAR fragment
-  \emph{best hit}. Otherwise, markers part of the CAR fragment that is
-  assigned as focal segment - CAR fragment \emph{best hit} have a value of
+  For \code{NM1}, markers part of a class I nonsyntenic move have a value of
+  \code{0.5} if non of the involved CAR fragments is a focal segment - CAR
+  fragment \emph{best hit}. Otherwise, markers part of the CAR fragment that
+  is assigned as focal segment - CAR fragment \emph{best hit} have a value of
   \code{0}, while markers part of all other non-\emph{best hit} CAR fragments
-  have a value of \code{1}. For \code{TLWS} and \code{TLWC}, markers part of
-  a rearrangement with an upstream and a downstream component have a value of
+  have a value of \code{1}. For \code{NM2} and \code{SM}, markers part of a
+  rearrangement with an upstream and a downstream component have a value of
   \code{1 - remWgt} (or \code{remWgt}) when they are part of the component
   that is more (or less) parsimonious to have changed position; if either
   component is equally parsimonious to have changed position, both have a
@@ -92,15 +92,15 @@ A list of matrices that store data on different classes of
   of \code{1}. For \code{IV}, markers part of an inversion have a value of
   \code{1}.
 
-  The list elements \code{$TLBSbS}, \code{$TLBSbE}, \code{$TLWSbS},
-  \code{$TLWSbE}, \code{$TLWCbS}, \code{$TLWCbE}, \code{$IVbS}, and
-  \code{$IVbE} are numeric matrices that tag markers that denote the start
-  (\code{$*bS}) and end (\code{$*bE}) elements for the four classes of
-  rearrangements (i.e., the markers adjacent to rearrangement breakpoints).
-  Each rearrangement is represented by a separate column, but columns for
+  The list elements \code{$NM1bS}, \code{$NM1bE}, \code{$NM2bS},
+  \code{$NM2bE}, \code{$SMbS}, \code{$SMbE}, \code{$IVbS}, and \code{$IVbE}
+  are numeric matrices that tag markers that denote the start (\code{$*bS})
+  and end (\code{$*bE}) elements for the four classes of rearrangements
+  (i.e., the markers adjacent to rearrangement breakpoints). Each
+  rearrangement is represented by a separate column, but columns for
   individual focal segments are joined for all matrices across rows
-  (including \code{$TLBSbS} and \code{$TLBSbE}) to save space. Tag values
-  correspond to the ones in \code{$TLBS}, \code{$TLWS}, \code{$TLWC}, and
+  (including \code{$NM1bS} and \code{$NM1bE}) to save space. Tag values
+  correspond to the ones in \code{$NM1}, \code{$NM2}, \code{$SM}, and
   \code{$IV}.
 
   The list elements \code{$nodeori}, \code{$blockori}, \code{$blockid},
@@ -130,9 +130,10 @@ A list of matrices that store data on different classes of
   block order. \code{$premask} and \code{$subnode} are numeric matrices that
   store internal data used for the alignment and identification of
   rearrangements. Integers \code{>0} in \code{$subnode} indicate subdivisions
-  of the corresponding \emph{PQ-tree} due to translocations. All subdivisions
-  have been searched separately for rearrangements one step further down the
-  hierarchy. This is of main relevance when \code{splitnodes = TRUE}.
+  of the corresponding \emph{PQ-tree} due to nonsyntenic or syntenic moves.
+  All subdivisions have been searched separately for rearrangements one step
+  further down the hierarchy. This is of main relevance when \code{splitnodes
+  = TRUE}.
 
   The returned data can be visualized with the \code{\link{genomeImagePlot}}
   function, or summarized and visualized with the
@@ -190,20 +191,20 @@ ancestral genome reconstruction or an extant genome
   case for example when the genome was reconstructed with the software ANGES,
   Jones \emph{et al.} 2012, using the option \code{markers_doubled 1}.)
   Orientation information facilitates detecting and classifying
-  rearrangements as inversions or translocations, and can help determining
+  rearrangements as inversions or syntenic moves, and can help determining
   whether \emph{PQ-tree} nodes are aligned to the focal genome in ascending
   (i.e., standard) or descending (i.e., inverted) direction.
 
   \code{remWgt} provides the tagging weight for rearrangements consisting of
   alternative sets of markers, either of which may have caused an apparent
-  translocation (e.g., a set of markers may have translocated upstream, or
-  alternatively another set of markers may have translocated downstream). The
-  set of markers that is more parsimonious to have changed position relative
-  to the other set receives tag values equal \code{1 - remWgt}, while the
-  alternative set of markers receives tag values equal \code{remWgt}. Setting
-  this argument to non-default may require adjusting the \code{remThld}
-  argument in the \code{genomeImagePlot} and \code{renomeRearrPlot} functions
-  accordingly.
+  nonsyntenic or syntenic move (e.g., a set of markers may have moved
+  upstream, or alternatively another set of markers may have moved
+  downstream). The set of markers that is more parsimonious to have changed
+  position relative to the other set receives tag values equal \code{1 -
+  remWgt}, while the alternative set of markers receives tag values equal
+  \code{remWgt}. Setting this argument to non-default may require adjusting
+  the \code{remThld} argument in the \code{genomeImagePlot} and
+  \code{renomeRearrPlot} functions accordingly.
 }
 \section{Algorithm}{
 

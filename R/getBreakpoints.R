@@ -113,13 +113,13 @@ getBreakpoints<-function(SYNT,focalgenome,ordfocal = NULL,remThld = 0){
     ## -------------------------------------------
 
     ## subset focalgenome to those retained in SYNT
-    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$TLWC))
+    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$SM))
     markerpos<-which(!is.na(markerpos))
-    if(length(unique(markerpos)) != nrow(SYNT$TLWC)){
+    if(length(unique(markerpos)) != nrow(SYNT$SM)){
         stop("some markers in SYNT are absent in focalgenome")
     }
     markers<-focalgenome[markerpos,,drop=FALSE]
-    if(sum(rownames(SYNT$TLWC) == as.character(markers$marker)) != nrow(markers)){
+    if(sum(rownames(SYNT$SM) == as.character(markers$marker)) != nrow(markers)){
         stop("SYNT is not ordered to the subset of shared markers\n    in focalgenome. Rerun 'computeRearrs' and retry.")
     }
 
@@ -141,10 +141,10 @@ getBreakpoints<-function(SYNT,focalgenome,ordfocal = NULL,remThld = 0){
         mpos<-which(markers$scaff==scafset[s])
 
         ## breakpoints (combined for all rearrangement classes)
-        tmpS<-cbind(SYNT$IVbS[mpos,,drop=FALSE],SYNT$TLWCbS[mpos,,drop=FALSE],
-                    SYNT$TLWSbS[mpos,,drop=FALSE],SYNT$TLBSbS[mpos,,drop=FALSE])
-        tmpE<-cbind(SYNT$IVbE[mpos,,drop=FALSE],SYNT$TLWCbE[mpos,,drop=FALSE],
-                    SYNT$TLWSbE[mpos,,drop=FALSE],SYNT$TLBSbE[mpos,,drop=FALSE])
+        tmpS<-cbind(SYNT$IVbS[mpos,,drop=FALSE],SYNT$SMbS[mpos,,drop=FALSE],
+                    SYNT$NM2bS[mpos,,drop=FALSE],SYNT$NM1bS[mpos,,drop=FALSE])
+        tmpE<-cbind(SYNT$IVbE[mpos,,drop=FALSE],SYNT$SMbE[mpos,,drop=FALSE],
+                    SYNT$NM2bE[mpos,,drop=FALSE],SYNT$NM1bE[mpos,,drop=FALSE])
         if(sum(tmpS)>remThld | sum(tmpE)>remThld){
             brpts<-getBreakpnts2BP(tmpS,tmpE,markers$start[mpos],
                                    markers$end[mpos],remThld)

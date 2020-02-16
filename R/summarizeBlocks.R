@@ -73,8 +73,8 @@
 #'
 #'   The names of the top-level list elements correspond to the strings in
 #'   \code{ordfocal}. Each list element is itself a list containing the data
-#'   frame \code{$blocks} and five numeric matrices \code{$TLBS}, \code{$TLWS},
-#'   \code{$TLWC}, \code{$IV}, and \code{$IVsm}, described below. In all six
+#'   frame \code{$blocks} and five numeric matrices \code{$NM1}, \code{$NM2},
+#'   \code{$SM}, \code{$IV}, and \code{$IVsm}, described below. In all six
 #'   list elements, each synteny block is represented by a row. Note that
 #'   separate blocks are also generated when the hierarchical structure of the
 #'   underlying \emph{PQ-tree} changes, therefore not all independent rows are
@@ -104,12 +104,12 @@
 #'   \code{$blocks$nodeori1}, for example, summarizes for each block the values
 #'   in the second column (i.e., the first node level) of \code{SYNT$nodeori}.
 #'
-#'   The numeric matrices \code{$TLBS}, \code{$TLWS}, \code{$TLWC}, \code{$IV},
+#'   The numeric matrices \code{$NM1}, \code{$NM2}, \code{$SM}, \code{$IV},
 #'   and \code{$IVsm} indicate whether blocks are part of different classes of
-#'   rearrangements. \code{$TLBS} stores \code{T}rans\code{L}ocations between
-#'   CARs \code{B}etween focal \code{S}egments; \code{$TLWS} stores
+#'   rearrangements. \code{$NM1} stores \code{T}rans\code{L}ocations between
+#'   CARs \code{B}etween focal \code{S}egments; \code{$NM2} stores
 #'   \code{T}rans\code{L}ocations between CARs \code{W}ithin focal
-#'   \code{S}egments; \code{$TLWC} stores \code{T}rans\code{L}ocations within
+#'   \code{S}egments; \code{$SM} stores \code{T}rans\code{L}ocations within
 #'   CARs \code{W}ithin focal \code{S}egments; \code{$IV} and \code{$IVsm} store
 #'   \code{I}n\code{V}ersions within CARs within focal segments. In \code{$IV},
 #'   blocks that are part of a multi-marker inversion are tagged with \code{1},
@@ -117,7 +117,7 @@
 #'   single-marker inversions (i.e., markers with switched orientation) within
 #'   their blocks. Each rearrangement is represented by a separate column, and
 #'   blocks that are part of a rearrangement have a tag value of \code{>0}. Note
-#'   that some columns in \code{$TLWS} or \code{$TLWC} may be duplicated due to
+#'   that some columns in \code{$NM2} or \code{$SM} may be duplicated due to
 #'   the functioning of the underlying algorithm in \code{\link{computeRearrs}};
 #'   although corresponding to the same rearrangement, these duplicated columns
 #'   are nevertheless included for completeness. By default these columns will
@@ -187,13 +187,13 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
     ## -------------------------------------------
 
     ## subset focalgenome to those retained in SYNT
-    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$TLWC))
+    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$SM))
     markerpos<-which(!is.na(markerpos))
-    if(length(unique(markerpos)) != nrow(SYNT$TLWC)){
+    if(length(unique(markerpos)) != nrow(SYNT$SM)){
         stop("some markers in SYNT are absent in focalgenome")
     }
     markers<-focalgenome[markerpos,,drop=FALSE]
-    if(sum(rownames(SYNT$TLWC) == as.character(markers$marker)) != nrow(markers)){
+    if(sum(rownames(SYNT$SM) == as.character(markers$marker)) != nrow(markers)){
         stop("SYNT is not ordered to the subset of shared markers\n    in focalgenome. Rerun 'computeRearrs' and retry.")
     }
     if(length(intersect(ordfocal,markers$scaff)) != length(ordfocal)){
@@ -203,11 +203,11 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
     ## subset compgenome to those retained in SYNT
     treepos<-match(markers$marker,compgenome$marker)
     treepos<-treepos[!is.na(treepos)]
-    if(length(unique(treepos)) != nrow(SYNT$TLWC)){
+    if(length(unique(treepos)) != nrow(SYNT$SM)){
         stop("some markers in SYNT are absent in compgenome")
     }
     tree<-compgenome[treepos,,drop=FALSE]
-    if(sum(rownames(SYNT$TLWC) == as.character(tree$marker)) != nrow(tree)){
+    if(sum(rownames(SYNT$SM) == as.character(tree$marker)) != nrow(tree)){
         stop("could not subset compgenome to the set of shared markers\n    in SYNT. Rerun 'computeRearrs' and retry.")
     }
 
@@ -327,19 +327,19 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
         ## summarize rearrangements
         ## ------------------------
 
-        ## TLBS
+        ## NM1
         ## -------
-        Re<-SYNT$TLBS[scaffrows,]
+        Re<-SYNT$NM1[scaffrows,]
         tmp<-removeZeros(Re,scaffrows,
-                         rownames(SYNT$TLBS)[scaffrows],testscaff,1)
-        blockTLBS<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
+                         rownames(SYNT$NM1)[scaffrows],testscaff,1)
+        blockNM1<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
 
         if(ncol(tmp)>0){
             for(k in 1:nrow(blocks)){
                 for(l in 1:ncol(tmp)){
                     val<-unique(tmp[(blocks[k,1]):(blocks[k,2]),l])
                     if(length(val)==1){
-                        blockTLBS[k,l]<-val
+                        blockNM1[k,l]<-val
                     }else{
                         stop("Unexpected number of tags for TLcarB")
                     }
@@ -347,19 +347,19 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
             }
         }
 
-        ## TLWS
+        ## NM2
         ## -------
-        Re<-SYNT$TLWS[scaffrows,]
+        Re<-SYNT$NM2[scaffrows,]
         tmp<-removeZeros(Re,scaffrows,
-                         rownames(SYNT$TLWS)[scaffrows],testscaff,1)
-        blockTLWS<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
+                         rownames(SYNT$NM2)[scaffrows],testscaff,1)
+        blockNM2<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
 
         if(ncol(tmp)>0){
             for(k in 1:nrow(blocks)){
                 for(l in 1:ncol(tmp)){
                     val<-unique(tmp[(blocks[k,1]):(blocks[k,2]),l])
                     if(length(val)==1){
-                        blockTLWS[k,l]<-val
+                        blockNM2[k,l]<-val
                     }else{
                         stop("Unexpected number of tags for TLcarW")
                     }
@@ -368,19 +368,19 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
         }
 
 
-        ## TLWC
+        ## SM
         ## ---
-        Re<-SYNT$TLWC[scaffrows,]
+        Re<-SYNT$SM[scaffrows,]
         tmp<-removeZeros(Re,scaffrows,
-                         rownames(SYNT$TLWC)[scaffrows],testscaff,1)
-        blockTLWC<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
+                         rownames(SYNT$SM)[scaffrows],testscaff,1)
+        blockSM<-matrix(NA,ncol=ncol(tmp),nrow=nrow(blocks))
 
         if(ncol(tmp)>0){
             for(k in 1:nrow(blocks)){
                 for(l in 1:ncol(tmp)){
                     val<-unique(tmp[(blocks[k,1]):(blocks[k,2]),l])
                     if(length(val)==1){
-                        blockTLWC[k,l]<-val
+                        blockSM[k,l]<-val
                     }else{
                         stop("Unexpected number of tags for TP")
                     }
@@ -435,8 +435,8 @@ summarizeBlocks<-function(SYNT,focalgenome,compgenome,ordfocal){
                                 paste0("[",1:nrow(blockIVsm),",]"),testscaff,1)
 
 
-        BLOCKS[[s]]<-list(blocks=blocks,TLBS=blockTLBS,
-                          TLWS=blockTLWS,TLWC=blockTLWC,
+        BLOCKS[[s]]<-list(blocks=blocks,NM1=blockNM1,
+                          NM2=blockNM2,SM=blockSM,
                           IV=blockIV,IVsm=blockIVsm)
     }
 

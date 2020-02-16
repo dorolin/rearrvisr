@@ -160,14 +160,14 @@ A plot to the default graphics device (but not "RStudioGD") or a PDF
   either by an insertion of another CAR or because of a change in the
   hierarchical structure of the underlying \emph{PQ-tree}. Block IDs with
   \code{".1"} or \code{".2"} suffixes indicate rearrangements that may arise
-  by either an inversion or a translocation between adjacent blocks, but that
-  were classified as translocation for the sake of parsimony. For
+  by either an inversion or a syntenic move between adjacent blocks, but that
+  were classified as syntenic move for the sake of parsimony. For
   \emph{P-nodes}, the \code{bid} row is empty unless the node is part of a
   rearrangement, in which case IDs indicate different rearrangements, but not
   block order. The third row (\code{bor}) gives the block orientation within
   its node. It has the same color and symbol coding as \code{nor} above. For
   example, a \code{"-"} block within a \code{"+"} node indicates either an
-  inversion or a translocation between adjacent blocks. The fourth row
+  inversion or a syntenic move between adjacent blocks. The fourth row
   (\code{eid}) gives the range of element IDs for each block within its node
   and for its level of hierarchy. These IDs correspond to the node elements
   in the odd columns of \code{compgenome} (note that some IDs within blocks
@@ -177,20 +177,19 @@ A plot to the default graphics device (but not "RStudioGD") or a PDF
   The final set of rows (\code{rea}) indicates whether blocks are part of
   different classes of rearrangements. Horizontal lines that are at identical
   height denote the same rearrangement (potentially disrupted by inserted
-  CARs). Green are translocations between CARs between focal segments (TLBS);
-  blue are translocations between CARs within focal segments (TLWS); purple
-  are translocations within CARs within focal segments (TLWC); maroon are
-  inversions within CARs within focal segments (IV). Inversions that involve
-  only a single marker (i.e., markers with switched orientation) are
-  indicated by a short vertical rather than a horizontal line. Lighter
-  coloration denotes smaller weights for rearrangement tags in the respective
-  matrices in \code{BLOCKS}. Unless the argument \code{remThld} is set to a
-  value smaller than that of \code{remWgt} used in the
-  \code{\link{computeRearrs}} function, only lines for blocks that are more
-  parsimonious to have changed position relative to alternative blocks are
-  plotted. If \code{simplifyTags = FALSE}, all tags for TLWS and TLWC will be
-  plotted for completeness, i.e., including those that are duplicated due to
-  the functioning of the underlying algorithm in \code{\link{computeRearrs}}.
+  CARs). Green are class I nonsyntenic moves (NM1); blue are class II
+  nonsyntenic moves (NM2); purple are syntenic moves (SM); maroon are
+  inversions (IV). Inversions that involve only a single marker (i.e.,
+  markers with switched orientation) are indicated by a short vertical rather
+  than a horizontal line. Lighter coloration denotes smaller weights for
+  rearrangement tags in the respective matrices in \code{BLOCKS}. Unless the
+  argument \code{remThld} is set to a value smaller than that of
+  \code{remWgt} used in the \code{\link{computeRearrs}} function, only lines
+  for blocks that are more parsimonious to have changed position relative to
+  alternative blocks are plotted. If \code{simplifyTags = FALSE}, all tags
+  for NM2 and SM will be plotted for completeness, i.e., including those that
+  are duplicated due to the functioning of the underlying algorithm in
+  \code{\link{computeRearrs}}.
 }
 \description{
 Generate a plot that shows synteny blocks between a focal and a compared

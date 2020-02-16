@@ -17,20 +17,20 @@ mandatory columns \code{$marker}, \code{$scaff}, \code{$start},
 \code{$end}, and \code{$strand}, and optional further columns. Markers need
 to be ordered by their map position.}
 
-\item{filterMin}{A numerical vector of the form \code{c(tlbs, tlws, tlwc,
+\item{filterMin}{A numerical vector of the form \code{c(nm1, nm2, sm,
 iv)} that specifies the minimum number of markers a rearrangement has to
-comprise to be retained. \code{tlbs} is the minimum number of markers in
-\code{SYNT$TLBS}, \code{tlws} is the minimum number of markers in
-\code{SYNT$TLWS}, \code{tlwc} is the minimum number of markers in
-\code{SYNT$TLWC}, and \code{iv} is the minimum number of markers in
+comprise to be retained. \code{nm1} is the minimum number of markers in
+\code{SYNT$NM1}, \code{nm2} is the minimum number of markers in
+\code{SYNT$NM2}, \code{sm} is the minimum number of markers in
+\code{SYNT$SM}, and \code{iv} is the minimum number of markers in
 \code{SYNT$IV}.}
 
-\item{filterMax}{A numerical vector of the form \code{c(tlbs, tlws, tlwc,
+\item{filterMax}{A numerical vector of the form \code{c(nm1, nm2, sm,
 iv)} that specifies the maximum number of markers a rearrangement is
-allowed to comprise to be retained. \code{tlbs} is the maximum number of
-markers in \code{SYNT$TLBS}, \code{tlws} is the maximum number of markers
-in \code{SYNT$TLWS}, \code{tlwc} is the maximum number of markers in
-\code{SYNT$TLWC}, and \code{iv} is the maximum number of markers in
+allowed to comprise to be retained. \code{nm1} is the maximum number of
+markers in \code{SYNT$NM1}, \code{nm2} is the maximum number of markers
+in \code{SYNT$NM2}, \code{sm} is the maximum number of markers in
+\code{SYNT$SM}, and \code{iv} is the maximum number of markers in
 \code{SYNT$IV}.}
 }
 \value{
@@ -69,10 +69,8 @@ Parameters \code{SYNT} and \code{focalgenome} need to be
   shared markers being in the same order.
 
   Rearrangements are stored in \code{SYNT} and include the following
-  rearrangement classes: TLBS are translocations between CARs between focal
-  segments; TLWS are translocations between CARs within focal segments; TLWC
-  are translocations within CARs within focal segments; IV are inversions
-  within CARs within focal segments.
+  rearrangement classes: NM1 are class I nonsyntenic moves; NM2 are class II
+  nonsyntenic moves; SM are syntenic moves; IV are inversions.
 }
 \examples{
 SYNT <- computeRearrs(TOY24_focalgenome, TOY24_compgenome, doubled = TRUE)

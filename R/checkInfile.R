@@ -282,11 +282,11 @@ checkInfile<-function(myobject, myclass, checkorder = NULL){
         if(!is.list(myobject)){
             stop(paste(myclass,"needs to be a list"))
         }
-        if(any(!is.element(c("TLBS","TLWS","TLWC","IV","TLBSbS",
-                             "TLBSbE","TLWSbS","TLWSbE","TLWCbS",
-                             "TLWCbE","IVbS","IVbE","nodeori","blockori",
+        if(any(!is.element(c("NM1","NM2","SM","IV","NM1bS",
+                             "NM1bE","NM2bS","NM2bE","SMbS",
+                             "SMbE","IVbS","IVbE","nodeori","blockori",
                              "blockid","premask","subnode"),names(myobject)))){
-            stop(paste("list objects in",myclass,"need to include\n    'TLBS', 'TLWS', 'TLWC', 'IV', 'TLBSbS', 'TLBSbE',\n    'TLWSbS', 'TLWSbE', 'TLWCbS', 'TLWCbE', 'IVbS', 'IVbE',\n    'nodeori', 'blockori', 'blockid', 'premask', 'subnode'"))
+            stop(paste("list objects in",myclass,"need to include\n    'NM1', 'NM2', 'SM', 'IV', 'NM1bS', 'NM1bE',\n    'NM2bS', 'NM2bE', 'SMbS', 'SMbE', 'IVbS', 'IVbE',\n    'nodeori', 'blockori', 'blockid', 'premask', 'subnode'"))
         }
         for(i in 1:length(myobject)){
             if(!is.matrix(myobject[[i]])){
@@ -304,12 +304,12 @@ checkInfile<-function(myobject, myclass, checkorder = NULL){
                     stop(paste("list object 'filter' in",myclass,"needs to be a numeric matrix"))
                 }
             }else{
-                if(sum(rownames(myobject[[i]]) != rownames(myobject$TLWC))>0){
+                if(sum(rownames(myobject[[i]]) != rownames(myobject$SM))>0){
                     stop(paste("rownames in",myclass,"differ"))
                 }
             }
         }
-        if(anyDuplicated(rownames(myobject$TLWC)) > 0){
+        if(anyDuplicated(rownames(myobject$SM)) > 0){
             stop(paste("some rownames are duplicated in",myclass))
         }
 
@@ -320,9 +320,9 @@ checkInfile<-function(myobject, myclass, checkorder = NULL){
         if(!is.list(myobject) | length(myobject) < 1){
             stop(paste(myclass,"needs to be a list"))
         }
-        if(any(!is.element(c("blocks","TLBS","TLWS","TLWC","IV","IVsm"),
+        if(any(!is.element(c("blocks","NM1","NM2","SM","IV","IVsm"),
                            names(myobject[[1]])))){
-            stop(paste("list objects within each list in",myclass,"need to include\n    'blocks', 'TLBS', 'TLWS', 'TLWC', 'IV', 'IVsm'"))
+            stop(paste("list objects within each list in",myclass,"need to include\n    'blocks', 'NM1', 'NM2', 'SM', 'IV', 'IVsm'"))
         }
         if(!is.data.frame(myobject[[1]]$blocks)){
             stop(paste("object '$blocks' within",myclass,"needs to be a data frame"))
@@ -344,9 +344,9 @@ checkInfile<-function(myobject, myclass, checkorder = NULL){
                 stop(paste("all columns past the first five in object '$blocks' within",myclass,"\n    need to be characters"))
             }
         }
-        if(nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$TLBS) |
-           nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$TLWS) |
-           nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$TLWC) |
+        if(nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$NM1) |
+           nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$NM2) |
+           nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$SM) |
            nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$IV) |
            nrow(myobject[[1]]$blocks) != nrow(myobject[[1]]$IVsm) |
            nrow(myobject[[1]]$blocks) < 1){

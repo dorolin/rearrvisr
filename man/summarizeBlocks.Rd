@@ -42,8 +42,8 @@ A list of lists that summarizes the alignment between the focal
 
   The names of the top-level list elements correspond to the strings in
   \code{ordfocal}. Each list element is itself a list containing the data
-  frame \code{$blocks} and five numeric matrices \code{$TLBS}, \code{$TLWS},
-  \code{$TLWC}, \code{$IV}, and \code{$IVsm}, described below. In all six
+  frame \code{$blocks} and five numeric matrices \code{$NM1}, \code{$NM2},
+  \code{$SM}, \code{$IV}, and \code{$IVsm}, described below. In all six
   list elements, each synteny block is represented by a row. Note that
   separate blocks are also generated when the hierarchical structure of the
   underlying \emph{PQ-tree} changes, therefore not all independent rows are
@@ -73,12 +73,12 @@ A list of lists that summarizes the alignment between the focal
   \code{$blocks$nodeori1}, for example, summarizes for each block the values
   in the second column (i.e., the first node level) of \code{SYNT$nodeori}.
 
-  The numeric matrices \code{$TLBS}, \code{$TLWS}, \code{$TLWC}, \code{$IV},
+  The numeric matrices \code{$NM1}, \code{$NM2}, \code{$SM}, \code{$IV},
   and \code{$IVsm} indicate whether blocks are part of different classes of
-  rearrangements. \code{$TLBS} stores \code{T}rans\code{L}ocations between
-  CARs \code{B}etween focal \code{S}egments; \code{$TLWS} stores
+  rearrangements. \code{$NM1} stores \code{T}rans\code{L}ocations between
+  CARs \code{B}etween focal \code{S}egments; \code{$NM2} stores
   \code{T}rans\code{L}ocations between CARs \code{W}ithin focal
-  \code{S}egments; \code{$TLWC} stores \code{T}rans\code{L}ocations within
+  \code{S}egments; \code{$SM} stores \code{T}rans\code{L}ocations within
   CARs \code{W}ithin focal \code{S}egments; \code{$IV} and \code{$IVsm} store
   \code{I}n\code{V}ersions within CARs within focal segments. In \code{$IV},
   blocks that are part of a multi-marker inversion are tagged with \code{1},
@@ -86,7 +86,7 @@ A list of lists that summarizes the alignment between the focal
   single-marker inversions (i.e., markers with switched orientation) within
   their blocks. Each rearrangement is represented by a separate column, and
   blocks that are part of a rearrangement have a tag value of \code{>0}. Note
-  that some columns in \code{$TLWS} or \code{$TLWC} may be duplicated due to
+  that some columns in \code{$NM2} or \code{$SM} may be duplicated due to
   the functioning of the underlying algorithm in \code{\link{computeRearrs}};
   although corresponding to the same rearrangement, these duplicated columns
   are nevertheless included for completeness. By default these columns will

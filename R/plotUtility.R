@@ -16,7 +16,7 @@ setRearrPlot<-function(BLOCKS,ordfocal,space,blockwidth,mar,
     for(s in mysubset){
         nlev<-nlev+(ncol(BLOCKS[[s]]$blocks)-5)/9+1
         nblocks<-max(nblocks,nrow(BLOCKS[[s]]$blocks))
-        allrearrs<-cbind(BLOCKS[[s]]$TLBS,BLOCKS[[s]]$TLWS,BLOCKS[[s]]$TLWC,
+        allrearrs<-cbind(BLOCKS[[s]]$NM1,BLOCKS[[s]]$NM2,BLOCKS[[s]]$SM,
                          BLOCKS[[s]]$IV,BLOCKS[[s]]$IVsm)
         if(ncol(allrearrs)>0){
             newrearrs<-sum(apply(allrearrs,2,function(x) sum(x>remThld)>0))
@@ -163,7 +163,7 @@ summarizeTags<-function(mydata,mpos,markernames,ordfocal,s,remThld=0){
 
 
 ## ------------------------------------------------------------------------
-## simplify BLOCKS tags for TLWS and TLWC (remove duplicate flank tags,
+## simplify BLOCKS tags for NM2 and SM (remove duplicate flank tags,
 ##  and remove flanks that are already covered by 1.0 tags)
 ## ------------------------------------------------------------------------
 
@@ -174,35 +174,35 @@ simplifyBlockTags<-function(BLOCKS,remThld=0){
 
     for(s in 1:length(names(BLOCKS))){
 
-        TLWSblocks<-BLOCKS[[s]]$TLWS
-        TLWCblocks<-BLOCKS[[s]]$TLWC
+        NM2blocks<-BLOCKS[[s]]$NM2
+        SMblocks<-BLOCKS[[s]]$SM
 
         ## (1) remove duplicate flanks
         ## ---------------------------
         ##  (if not a flank it should never be duplicated)
-        ## TLWS
-        toRm<-apply(TLWSblocks,2,function(x) sum(x==0.5)==sum(x>0)) &
-            duplicated(TLWSblocks,MARGIN=2)
+        ## NM2
+        toRm<-apply(NM2blocks,2,function(x) sum(x==0.5)==sum(x>0)) &
+            duplicated(NM2blocks,MARGIN=2)
         if(sum(toRm)>0){
-            TLWSblocks<-TLWSblocks[,!toRm,drop=FALSE]
+            NM2blocks<-NM2blocks[,!toRm,drop=FALSE]
         }
 
-        ## TLWC
-        toRm<-apply(TLWCblocks,2,function(x) sum(x==0.5)==sum(x>0)) &
-            duplicated(TLWCblocks,MARGIN=2)
+        ## SM
+        toRm<-apply(SMblocks,2,function(x) sum(x==0.5)==sum(x>0)) &
+            duplicated(SMblocks,MARGIN=2)
         if(sum(toRm)>0){
-            TLWCblocks<-TLWCblocks[,!toRm,drop=FALSE]
+            SMblocks<-SMblocks[,!toRm,drop=FALSE]
         }
 
         ## (2a) remove 0.5 flanks already covered by 1.0 tags (i.e., inserts)
         ## ------------------------------------------------------------------
-        ## TLWS
-        tmp<-apply(TLWSblocks,2,function(x) sum(x==0.5)==sum(x>0))
+        ## NM2
+        tmp<-apply(NM2blocks,2,function(x) sum(x==0.5)==sum(x>0))
         if(sum(tmp)>0 & sum(!tmp)>0){
             ## putative flanks and putative inserts exist
-            flanks<-getGapsFlanks(TLWSblocks[,tmp,drop=FALSE])$Flanks
+            flanks<-getGapsFlanks(NM2blocks[,tmp,drop=FALSE])$Flanks
             ## (can be other things than flanks)
-            inserts<-TLWSblocks[,!tmp,drop=FALSE]
+            inserts<-NM2blocks[,!tmp,drop=FALSE]
             ## everything that is not a flank
             ##  (can be other things than inserts)
             tmpToRm<-numeric()
@@ -212,7 +212,7 @@ simplifyBlockTags<-function(BLOCKS,remThld=0){
                     ## only flank if at least two parts involved
                     isCovered<-numeric(ncol(myflank))
                     for(p in 1:ncol(myflank)){
-                        tmptag<-numeric(nrow(TLWSblocks))
+                        tmptag<-numeric(nrow(NM2blocks))
                         tmptag[(myflank[2,p]):(myflank[3,p])]<-1
                         if(duplicated(cbind(inserts,tmptag),MARGIN=2)[ncol(inserts)+1]){
                             isCovered[p]<-1
@@ -227,19 +227,19 @@ simplifyBlockTags<-function(BLOCKS,remThld=0){
                 }
             }
             if(length(tmpToRm)>0){
-                ## remove column from TLWS
+                ## remove column from NM2
                 toRm<-which(tmp==TRUE)[tmpToRm]
-                TLWSblocks<-TLWSblocks[,-toRm,drop=FALSE]
+                NM2blocks<-NM2blocks[,-toRm,drop=FALSE]
             }
         }
 
-        ## TLWC
-        tmp<-apply(TLWCblocks,2,function(x) sum(x==0.5)==sum(x>0))
+        ## SM
+        tmp<-apply(SMblocks,2,function(x) sum(x==0.5)==sum(x>0))
         if(sum(tmp)>0 & sum(!tmp)>0){
             ## putative flanks and putative inserts exist
-            flanks<-getGapsFlanks(TLWCblocks[,tmp,drop=FALSE])$Flanks
+            flanks<-getGapsFlanks(SMblocks[,tmp,drop=FALSE])$Flanks
             ## (can be other things than flanks)
-            inserts<-TLWCblocks[,!tmp,drop=FALSE]
+            inserts<-SMblocks[,!tmp,drop=FALSE]
             ## everything that is not a flank
             ##  (can be other things than inserts)
             tmpToRm<-numeric()
@@ -249,7 +249,7 @@ simplifyBlockTags<-function(BLOCKS,remThld=0){
                     ## only flank if at least two parts involved
                     isCovered<-numeric(ncol(myflank))
                     for(p in 1:ncol(myflank)){
-                        tmptag<-numeric(nrow(TLWCblocks))
+                        tmptag<-numeric(nrow(SMblocks))
                         tmptag[(myflank[2,p]):(myflank[3,p])]<-1
                         if(duplicated(cbind(inserts,tmptag),MARGIN=2)[ncol(inserts)+1]){
                             isCovered[p]<-1
@@ -264,41 +264,41 @@ simplifyBlockTags<-function(BLOCKS,remThld=0){
                 }
             }
             if(length(tmpToRm)>0){
-                ## remove column from TLWC
+                ## remove column from SM
                 toRm<-which(tmp==TRUE)[tmpToRm]
-                TLWCblocks<-TLWCblocks[,-toRm,drop=FALSE]
+                SMblocks<-SMblocks[,-toRm,drop=FALSE]
             }
         }
 
         ## (2b) remove (1-remThld) flanks already covered by 1.0 tags
         ## ----------------------------------------------------------
-        ## TLWS
-        tmp<-TLWSblocks
+        ## NM2
+        tmp<-NM2blocks
         tmp[tmp<=remThld]<-0
         tmp[tmp>=1-remThld]<-1
-        toRm<-apply(TLWSblocks,2,function(x) sum(x==remThld | x==(1-remThld))==sum(x>0) &
+        toRm<-apply(NM2blocks,2,function(x) sum(x==remThld | x==(1-remThld))==sum(x>0) &
                         (sum(x==remThld)>0 & sum(x==(1-remThld))>0)) &
                             duplicated(tmp,MARGIN=2)
         ## flanks and the tagged flank also exists as insert
         if(sum(toRm)>0){
-            TLWSblocks<-TLWSblocks[,!toRm,drop=FALSE]
+            NM2blocks<-NM2blocks[,!toRm,drop=FALSE]
         }
 
-        ## TLWC
-        tmp<-TLWCblocks
+        ## SM
+        tmp<-SMblocks
         tmp[tmp<=remThld]<-0
         tmp[tmp>=1-remThld]<-1
-        toRm<-apply(TLWCblocks,2,function(x) sum(x==remThld | x==(1-remThld))==sum(x>0) &
+        toRm<-apply(SMblocks,2,function(x) sum(x==remThld | x==(1-remThld))==sum(x>0) &
                         (sum(x==remThld)>0 & sum(x==(1-remThld))>0)) &
                             duplicated(tmp,MARGIN=2)
         ## flanks and the tagged flank also exists as insert
         if(sum(toRm)>0){
-            TLWCblocks<-TLWCblocks[,!toRm,drop=FALSE]
+            SMblocks<-SMblocks[,!toRm,drop=FALSE]
         }
 
 
-        BLOCKS[[s]]$TLWS<-TLWSblocks
-        BLOCKS[[s]]$TLWC<-TLWCblocks
+        BLOCKS[[s]]$NM2<-NM2blocks
+        BLOCKS[[s]]$SM<-SMblocks
 
     }
 

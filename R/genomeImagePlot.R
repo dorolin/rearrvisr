@@ -111,12 +111,10 @@
 #'   midpoints between the positions of the two markers present in \code{SYNT}
 #'   that are adjacent to the breakpoints. Only markers with black ticks can
 #'   receive colored ticks in the following rows. Maroon indicates markers that
-#'   are part of inversions within CARs within focal genome segments (IV);
-#'   purple indicates markers that are part of translocations within CARs within
-#'   focal genome segments (TLWC); blue indicates markers that are part of
-#'   translocations between CARs within focal genome segments (TLWS); green
-#'   indicates markers that are part of translocations between CARs between
-#'   focal genome segments (TLBS).
+#'   are part of inversions (IV); purple indicates markers that are part of
+#'   syntenic moves (SM); blue indicates markers that are part of class II
+#'   nonsyntenic moves (NM2); green indicates markers that are part of class I
+#'   nonsyntenic moves (NM1).
 #'
 #'   Unless the argument \code{remThld} is set to a value smaller than that of
 #'   \code{remWgt} in the \code{\link{computeRearrs}} function, only markers
@@ -280,13 +278,13 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
     ## -------------------------------------------
 
     ## subset focalgenome to those retained in SYNT
-    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$TLWC))
+    markerpos<-match(as.character(focalgenome$marker),rownames(SYNT$SM))
     markerpos<-which(!is.na(markerpos))
-    if(length(unique(markerpos)) != nrow(SYNT$TLWC)){
+    if(length(unique(markerpos)) != nrow(SYNT$SM)){
         stop("some markers in SYNT are absent in focalgenome")
     }
     markers<-focalgenome[markerpos,,drop=FALSE]
-    if(sum(rownames(SYNT$TLWC) == as.character(markers$marker)) != nrow(markers)){
+    if(sum(rownames(SYNT$SM) == as.character(markers$marker)) != nrow(markers)){
         stop("SYNT is not ordered to the subset of shared markers\n    in focalgenome. Rerun 'computeRearrs' and retry.")
     }
     if(length(intersect(ordfocal,markers$scaff)) != length(ordfocal)){
@@ -297,11 +295,11 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
     colorbreaks<-seq(0,1,0.01)
     ## reds for IV
     rPal<-colorRampPalette(c("#FFAAAA","#800000")) ## "#FF8080"
-    ## purples for TLWC
+    ## purples for SM
     pPal<-colorRampPalette(c("#CCAAFF","#330080")) ## "#B380FF"
-    ## blues for TLWS
+    ## blues for NM2
     bPal<-colorRampPalette(c("#AACCFF","#003380")) ## "#80B3FF"
-    ## greens for TLBS
+    ## greens for NM1
     ##gPal<-colorRampPalette(c("#AAFFEE","#008066")) ## "#80FFE6"
     gPal<-colorRampPalette(c("#AAFFAA","#008000")) ## "#2AFF2A"
 
@@ -384,10 +382,10 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
         mypos<-(markers[mpos,3]+markers[mpos,4])/2
         segments(x0=mypos,x1=mypos,y0=myy+0.25,y1=myy+0.5,col="black",lwd=0.3)
         ## breakpoints (combined for all rearrangement classes)
-        tmpS<-cbind(SYNT$IVbS[mpos,],SYNT$TLWCbS[mpos,],
-                    SYNT$TLWSbS[mpos,],SYNT$TLBSbS[mpos,])
-        tmpE<-cbind(SYNT$IVbE[mpos,],SYNT$TLWCbE[mpos,],
-                    SYNT$TLWSbE[mpos,],SYNT$TLBSbE[mpos,])
+        tmpS<-cbind(SYNT$IVbS[mpos,],SYNT$SMbS[mpos,],
+                    SYNT$NM2bS[mpos,],SYNT$NM1bS[mpos,])
+        tmpE<-cbind(SYNT$IVbE[mpos,],SYNT$SMbE[mpos,],
+                    SYNT$NM2bE[mpos,],SYNT$NM1bE[mpos,])
         if(sum(tmpS)>remThld | sum(tmpE)>remThld){
             brpts<-getBreakpnts2BP(tmpS,tmpE,markers$start[mpos],
                                    markers$end[mpos],remThld)
@@ -405,27 +403,27 @@ genomeImagePlot<-function(SYNT,focalgenome,ordfocal,
             mycolors<-rPal(100)[as.numeric(cut(tmp[tags],breaks=colorbreaks))]
             segments(x0=mypos,x1=mypos,y0=myy+1,y1=myy+2,col=mycolors,lwd=0.7)
         }
-        ## TLWC
-        tmp<-summarizeTags(SYNT$TLWC[mpos,],mpos,
-                           rownames(SYNT$TLWC)[mpos],ordfocal,s,remThld)
+        ## SM
+        tmp<-summarizeTags(SYNT$SM[mpos,],mpos,
+                           rownames(SYNT$SM)[mpos],ordfocal,s,remThld)
         if(sum(tmp)>0){
             tags<-which(tmp>0)
             mypos<-(markers[mpos[tags],3]+markers[mpos[tags],4])/2
             mycolors<-pPal(100)[as.numeric(cut(tmp[tags],breaks=colorbreaks))]
             segments(x0=mypos,x1=mypos,y0=myy+2,y1=myy+3,col=mycolors,lwd=0.7)
         }
-        ## TLWS
-        tmp<-summarizeTags(SYNT$TLWS[mpos,],mpos,
-                           rownames(SYNT$TLWS)[mpos],ordfocal,s,remThld)
+        ## NM2
+        tmp<-summarizeTags(SYNT$NM2[mpos,],mpos,
+                           rownames(SYNT$NM2)[mpos],ordfocal,s,remThld)
         if(sum(tmp)>0){
             tags<-which(tmp>0)
             mypos<-(markers[mpos[tags],3]+markers[mpos[tags],4])/2
             mycolors<-bPal(100)[as.numeric(cut(tmp[tags],breaks=colorbreaks))]
             segments(x0=mypos,x1=mypos,y0=myy+3,y1=myy+4,col=mycolors,lwd=0.7)
         }
-        ## TLBS
-        tmp<-summarizeTags(SYNT$TLBS[mpos,],mpos,
-                           rownames(SYNT$TLBS)[mpos],ordfocal,s,remThld)
+        ## NM1
+        tmp<-summarizeTags(SYNT$NM1[mpos,],mpos,
+                           rownames(SYNT$NM1)[mpos],ordfocal,s,remThld)
         if(sum(tmp)>0){
             tags<-which(tmp>0)
             mypos<-(markers[mpos[tags],3]+markers[mpos[tags],4])/2

@@ -98,12 +98,10 @@ A plot to the default graphics device (but not "RStudioGD") or a PDF
   midpoints between the positions of the two markers present in \code{SYNT}
   that are adjacent to the breakpoints. Only markers with black ticks can
   receive colored ticks in the following rows. Maroon indicates markers that
-  are part of inversions within CARs within focal genome segments (IV);
-  purple indicates markers that are part of translocations within CARs within
-  focal genome segments (TLWC); blue indicates markers that are part of
-  translocations between CARs within focal genome segments (TLWS); green
-  indicates markers that are part of translocations between CARs between
-  focal genome segments (TLBS).
+  are part of inversions (IV); purple indicates markers that are part of
+  syntenic moves (SM); blue indicates markers that are part of class II
+  nonsyntenic moves (NM2); green indicates markers that are part of class I
+  nonsyntenic moves (NM1).
 
   Unless the argument \code{remThld} is set to a value smaller than that of
   \code{remWgt} in the \code{\link{computeRearrs}} function, only markers

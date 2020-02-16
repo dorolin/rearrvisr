@@ -340,20 +340,20 @@ MEL_MSSYE<-merge(MEL_markers, MSSYE_compgenome, by = "marker",
 
 ## marker IDs should be identical to the ones in SYNT_MEL_MSSYE
 identical(as.character(MEL_MSSYE$marker), 
-          rownames(SYNT_MEL_MSSYE$TLBS))
+          rownames(SYNT_MEL_MSSYE$NM1))
 ```
 
 **Note:** For the following examples it is assumed that the alignment `MEL_MSSYE` has been created with the above command.
 
-**Next steps:** *The data returned by the `computeRearrs()` function can be filtered for rearrangements of a particular size with the `filterRearrs()` function, visualized with the `genomeImagePlot()` function, or summarized and visualized with the `summarizeBlocks()` and `genomeRearrPlot()` functions. Breakpoint coordinates for rearrangements can be extrated with the `getBreakpoints()` function.*
+**Next steps:** *The data returned by the `computeRearrs()` function can be filtered for rearrangements of a particular size with the `filterRearrs()` function, visualized with the `genomeImagePlot()` function, or summarized and visualized with the `summarizeBlocks()` and `genomeRearrPlot()` functions. Breakpoint coordinates for rearrangements can be extrated with the `getBreakpoints()` function. A summary of the number of detected rearrangements and breakpoints can be obtained with the `summarizeRearrs()` function.*
 
 ***
 
 **Output:** Each matrix in the output stores data on detected rearrangements and additional information. Markers are in rows, and the row names of each matrix correspond to the IDs in the *marker* column of `focalgenome` and `compgenome`.
 
-The matrices `$TLBS`, `$TLWS`, `$TLWC`, and `$IV` contain rearrangements of four different classes, and are briefly described below. Further details and information on the other matrices are provided in the function documentation.
+The matrices `$NM1`, `$NM2`, `$SM`, and `$IV` contain rearrangements of four different classes, and are briefly described below. Further details and information on the other matrices are provided in the function documentation.
 
-Rearrangements are classified as translocations between compared genome segments (i.e., CARs), analogous to interchromosomal rearrangements (`TLBS` and `TLWS`), and as translocations or inversions within compared genome segments, analogous to intrachromosomal rearrangements (`TLWC` and `IV`). `$TLBS` stores `T`rans`L`ocations between CARs `B`etween focal `S`egments; `$TLWS` stores `T`rans`L`ocations between CARs `W`ithin focal `S`egments; `$TLWC` stores `T`rans`L`ocations `W`ithin `C`ARs within focal segments; `$IV` stores `I`n`V`ersions within CARs within focal segments. See the Figure \ref{fig:classes} for examples of these four classes of rearrangements.
+Rearrangements are classified as nonsyntenic moves between compared genome segments (i.e., CARs), analogous to interchromosomal rearrangements (`NM1` and `NM2`), and as syntenic moves or inversions within compared genome segments, analogous to intrachromosomal rearrangements (`SM` and `IV`). `$NM1` stores class I `N`onsyntenic `M`oves; `$NM2` stores class II `N`onsyntenic `M`oves; `$SM` stores `S`yntenic `M`oves; `$IV` stores `I`n`V`ersions. See the Figure \ref{fig:classes} for examples of these four classes of rearrangements.
 
 ***
 
@@ -362,15 +362,15 @@ Rearrangements are classified as translocations between compared genome segments
 knitr::include_graphics("Classes.png")
 ```
 
-**Figure \ref{fig:classes}:** Markers located on two focal genome segments (left and right) are represented by pentagons. Markers are arranged from left to right by their position in the focal genome. The top row shows markers colored according to their CAR of origin, and integers in the bottom row indicate the order of markers within the compared genome. **(i)**, a `T`rans`L`ocation between CARs `B`etween focal `S`egments (`TLBS`; i.e., marker `17` of the red CAR is located in the middle of the left focal segment, while the remaining markers of the red CAR are on the right focal segment; note that in this example, the translocated marker `17` also belongs to class ii). **(ii)**, a `T`rans`L`ocation between CARs `W`ithin focal `S`egments (`TLWS`; i.e., marker `12` of the purple CAR is located in the middle of the red CAR within the right focal segment). **(iii)**, a `T`rans`L`ocation `W`ithin `C`ARs within focal segments (`TLWC`; i.e., marker `4` has changed position within the blue CAR within the left focal segment). **(iv)**, `I`n`V`ersion within CARs within focal segments (`IV`; i.e., markers `7 8 9` are inverted to `-9 -8 -7` within the purple CAR).
+**Figure \ref{fig:classes}:** Markers located on two focal genome segments (left and right) are represented by pentagons. Markers are arranged from left to right by their position in the focal genome. The top row shows markers colored according to their CAR of origin, and integers in the bottom row indicate the order of markers within the compared genome. **(i)**, a class I nonsyntenic move (`NM1`; i.e., marker `17` of the red CAR is located in the middle of the left focal segment, while the remaining markers of the red CAR are on the right focal segment; note that in this example, the rearranged marker `17` also belongs to class ii). **(ii)**, a class II nonsyntenic move (`NM2`; i.e., marker `12` of the purple CAR is located in the middle of the red CAR within the right focal segment). **(iii)**, a syntenic move (`SM`; i.e., marker `4` has changed position within the blue CAR within the left focal segment). **(iv)**, an inversion (`IV`; i.e., markers `7 8 9` are inverted to `-9 -8 -7` within the purple CAR).
 
 &nbsp;
 
 ***
 
-Each rearrangement is represented by a separate column. Except for `TLBS`, which are identified across focal segments, columns for individual focal segments are joined across rows to save space (i.e., for `TLWS`, `TLWC`, and `IV`, which are identified within focal segments). To preserve the tabular format, these matrices are filled by zeros for focal segments with a non-maximal number of rearrangements, if necessary. If no rearrangements were detected for a certain class, the matrix has zero columns.
+Each rearrangement is represented by a separate column. Except for `NM1`, which are identified across focal segments, columns for individual focal segments are joined across rows to save space (i.e., for `NM2`, `SM`, and `IV`, which are identified within focal segments). To preserve the tabular format, these matrices are filled by zeros for focal segments with a non-maximal number of rearrangements, if necessary. If no rearrangements were detected for a certain class, the matrix has zero columns.
 
-Markers that are part of a rearrangement have a tag value of `>0` within their respective column. Tagged markers within a column are not necessarily consecutive, for example, when a rearrangement is split into several parts through an insertion of a different CAR, or when a rearrangement has an upstream and a downstream component. Larger tag values (up to `1`) correspond to a higher confidence that the marker has been rearranged [^1]. This arises from the fact that translocations can only be identified relative to each other. For example, if the marker order in the compared genome is `1 2 3 4 5`, and that in the focal genome is `1 3 4 2 5`, marker `2` might have been translocated to the right, or markers `3 4` might have been translocated to the left. In such a case, the markers that are more parsimonious to have been translocated relative to the alternative markers receive tag values of `1 - remWgt`, while alternative markers receive tag values of `remWgt` (`remWgt` can be set by the user). If such a distinction cannot be made, all involved markers are tagged with `0.5`. Markers that are part of inversions are always tagged with `1`. Full details are given in the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript.
+Markers that are part of a rearrangement have a tag value of `>0` within their respective column. Tagged markers within a column are not necessarily consecutive, for example, when a rearrangement is split into several parts through an insertion of a different CAR, or when a rearrangement has an upstream and a downstream component. Larger tag values (up to `1`) correspond to a higher confidence that the marker has been rearranged [^1]. This arises from the fact that nonsyntenic or syntenic moves can only be identified relative to each other. For example, if the marker order in the compared genome is `1 2 3 4 5`, and that in the focal genome is `1 3 4 2 5`, marker `2` might have been moved to the right, or markers `3 4` might have been moved to the left. In such a case, the markers that are more parsimonious to have been moved relative to the alternative markers receive tag values of `1 - remWgt`, while alternative markers receive tag values of `remWgt` (`remWgt` can be set by the user). If such a distinction cannot be made, all involved markers are tagged with `0.5`. Markers that are part of inversions are always tagged with `1`. Full details are given in the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript.
 
 [^1]: Note that these values are not probabilities, rather labels to tag markers that have arrangements in the focal genome that are in conflict to their arrangement in the compared genome.
 
@@ -435,7 +435,7 @@ names(BLOCKS_MEL_MSSYE[[1]])
 
 **Output:** The function output is a list of lists for each focal genome segment in `ordfocal`. Each of these lists summarizes the alignment between `focalgenome` and `compgenome`, and the rearrangements in `SYNT`.
 
-Each list per focal genome segment contains the data frame `$blocks`, which contains information on the alignment and structure of each *PQ-tree*, and five matrices `$TLBS`, `$TLWS`, `$TLWC`, `$IV`, and `$IVsm` that store detected rearrangements. Each synteny block is represented by a row. Note that separate blocks are also generated when the hierarchical structure of the underlying *PQ-tree* changes, therefore not all independent rows are caused by a rearrangement. Further note that if the list `SYNT` has been filtered with the `filterRearrs()` function, only the detected rearrangements will be affected, while the information contained in `$blocks` will remain unchanged.
+Each list per focal genome segment contains the data frame `$blocks`, which contains information on the alignment and structure of each *PQ-tree*, and five matrices `$NM1`, `$NM2`, `$SM`, `$IV`, and `$IVsm` that store detected rearrangements. Each synteny block is represented by a row. Note that separate blocks are also generated when the hierarchical structure of the underlying *PQ-tree* changes, therefore not all independent rows are caused by a rearrangement. Further note that if the list `SYNT` has been filtered with the `filterRearrs()` function, only the detected rearrangements will be affected, while the information contained in `$blocks` will remain unchanged.
 
 
 \medskip
@@ -464,7 +464,7 @@ Additional columns in the `$blocks` data frame provide more information on the a
 
 There is only one hierarchy level for chromosome 3R of *D. melanogaster* in the example above. The column *nodeori1* stores the alignment direction of the first level node in the *PQ-tree* of the aligned CAR, with `1` indicating ascending (i.e., standard), and `-1` descending (i.e., inverted) alignment (given that the node is a *Q-node* and the alignment direction could be determined). Only one CAR (CAR `1`) has been aligned to chromosome 3R of *D. melanogaster* in descending direction. The column *blockori1* stores the orientation of each synteny block, again with `1` indicating ascending (i.e., standard), and `-1` descending (i.e., inverted) orientation (given that the bock orientation could be determined). In the above example, the first block has descending and the second block ascending direction, which is also reflected by the first and last node element IDs of each block, which are given in the columns *elemS1* and *elemE1*. 
 
-Finally, the column *blockid1* stores the ID of each synteny block within its node. For *Q-nodes*, block IDs reflect the order of synteny blocks in `compgenome`. In the above example, the first block on chromosome 3R of *D. melanogaster* is the last block on CAR `1` of the *MSSYE* ancestor. Block IDs with `.1` or `.2` suffixes (in arbitrary order) indicate blocks that were subject to an additional subdivision step. In the above example, the third and fourth blocks were initially joined to a descending block with node elements `1346` and `1345`. Block subdivisions are used to assign a more parsimonious `TLWC` instead of an `IV` to a block.
+Finally, the column *blockid1* stores the ID of each synteny block within its node. For *Q-nodes*, block IDs reflect the order of synteny blocks in `compgenome`. In the above example, the first block on chromosome 3R of *D. melanogaster* is the last block on CAR `1` of the *MSSYE* ancestor. Block IDs with `.1` or `.2` suffixes (in arbitrary order) indicate blocks that were subject to an additional subdivision step. In the above example, the third and fourth blocks were initially joined to a descending block with node elements `1346` and `1345`. Block subdivisions are used to assign a more parsimonious `SM` instead of an `IV` to a block.
 
 \medskip
 ```{r block-bound-3-4}
@@ -477,7 +477,7 @@ MEL_MSSYE[MEL_MSSYE$scaff == "3R", c(1, 2, 5, 8, 7, 10)][772:781, ]
 ## elements is ascending (i.e., from 1341 to 1350), while elements 
 ## 1346 and 1345 form a descending block. As their strand and 
 ## orientation show identical directionality, it is more 
-## parsimonious to assign a translocation instead of an inversion,
+## parsimonious to assign a syntenic move instead of an inversion,
 ## which would require two additional single-marker inversions to 
 ## achieve the required inverted directionality. Accordingly, the 
 ## initial block of two elements is split into two single-element 
@@ -485,7 +485,7 @@ MEL_MSSYE[MEL_MSSYE$scaff == "3R", c(1, 2, 5, 8, 7, 10)][772:781, ]
 ```
 
 
-The matrices `$TLBS`, `$TLWS`, `$TLWC`, `$IV`, and `$IVsm` summarize the four classes of rearrangements in `SYNT` for the synteny blocks characterized in `$blocks` (tag values within `$TLBS`, `$TLWS`, and `$TLWC` are the same as in `SYNT`, see above). Inversions that are part of a multi-marker inversion are stored in `$IV`, and blocks part of such inversions are tagged with `1` (with separate columns for different inversions). Single-marker inversions (i.e., markers with switched orientation) are stored in `$IVsm`. The positions of such single-marker inversions within their block are indicated by integers `>0` (with separate columns for different single-marker inversions).
+The matrices `$NM1`, `$NM2`, `$SM`, `$IV`, and `$IVsm` summarize the four classes of rearrangements in `SYNT` for the synteny blocks characterized in `$blocks` (tag values within `$NM1`, `$NM2`, and `$SM` are the same as in `SYNT`, see above). Inversions that are part of a multi-marker inversion are stored in `$IV`, and blocks part of such inversions are tagged with `1` (with separate columns for different inversions). Single-marker inversions (i.e., markers with switched orientation) are stored in `$IVsm`. The positions of such single-marker inversions within their block are indicated by integers `>0` (with separate columns for different single-marker inversions).
 
 
 \medskip
@@ -515,15 +515,15 @@ MEL_MSSYE[MEL_MSSYE$scaff == "3R", c(1, 2, 5, 8, 7, 10)][738:746, ]
 ```
 
 \medskip
-```{r sum-rearr-tlwc}
-## print $TLWC matrix for chromosome 3R of D. melanogaster
-BLOCKS_MEL_MSSYE$`3R`$TLWC
-## this shows a total of eight translocations, each involving a 
+```{r sum-rearr-sm}
+## print $SM matrix for chromosome 3R of D. melanogaster
+BLOCKS_MEL_MSSYE$`3R`$SM
+## this shows a total of eight syntenic moves, each involving a 
 ## single block. In all cases, blocks are tagged with 0.5, 
 ## indicating that it could not be distinguished which part of 
-## a translocation would be more parsimonious to have changed 
+## a syntenic move would be more parsimonious to have changed 
 ## position relative to the alternative part (e.g., for the 
-## translocation between the third and fourth block on 
+## syntenic move between the third and fourth block on 
 ## chromosome 3R, described above, it cannot be distinguished 
 ## whether node element 1346 has moved one block up, or element 
 ## 1345 one block down)
@@ -594,7 +594,7 @@ options(op)
 
 **Output:** On the y-axis, each focal genome segment that was included in `ordfocal` is plotted from top to bottom. Marker positions are on the x-axis. Vertical lines (ticks) indicate the positions of markers, rearrangement breakpoints, and different classes of rearrangements within six rows per focal segment.
 
-The bottom row shows the positions of all markers contained in `focalgenome` as gray ticks, and the positions of markers present in `SYNT` as black ticks in the upper half of the bottom row. The second row from the bottom gives the positions of rearrangement breakpoints by red ticks. Ticks are drawn at the midpoints between the positions of the two markers present in `SYNT` that are adjacent to the breakpoints. Only markers with black ticks can receive colored ticks in the remaining rows, which highlight markers that are part of different classes of rearrangements. Maroon indicates markers that are part of inversions within CARs within focal genome segments (`IV`); purple indicates markers that are part of translocations within CARs within focal genome segments (`TLWC`); blue indicates markers that are part of translocations between CARs within focal genome segments (`TLWS`); green indicates markers that are part of translocations between CARs between focal genome segments (`TLBS`). See the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript or `?computeRearrs` for more information on these classes of rearrangements. 
+The bottom row shows the positions of all markers contained in `focalgenome` as gray ticks, and the positions of markers present in `SYNT` as black ticks in the upper half of the bottom row. The second row from the bottom gives the positions of rearrangement breakpoints by red ticks. Ticks are drawn at the midpoints between the positions of the two markers present in `SYNT` that are adjacent to the breakpoints. Only markers with black ticks can receive colored ticks in the remaining rows, which highlight markers that are part of different classes of rearrangements. Maroon indicates markers that are part of inversions within CARs within focal genome segments (`IV`); purple indicates markers that are part of syntenic moves (`SM`); blue indicates markers that are part of class II nonsyntenic moves (`NM2`); green indicates markers that are part of class I nonsyntenic moves (`NM1`). See the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript or `?computeRearrs` for more information on these classes of rearrangements. 
 
 Unless the argument `remThld` is set to a value smaller than that of `remWgt` in the `computeRearrs()` function, only markers that are less parsimonious to have changed position relative to alternative markers are highlighted. Lighter tints denote markers that are part of large rearrangements, while darker shades denote markers that are part of small rearrangements. To distinguish between individual large rearrangements versus multiple short adjacent rearrangements, it may be helpful to take the position of breakpoints into account.
 
@@ -677,9 +677,9 @@ The top part of each focal segment visualizes the data contained in the `$blocks
 
 For each hierarchy level, up to four additional rows (depending on the values in the argument `plotelem`) show (*i*) the alignment orientation of the *PQ-tree* node to the focal genome (white rectangles and `+` indicating ascending, and black rectangles and `-` indicating descending alignment), (*ii*) the block IDs, (*iii*) the block orientation within its node (white rectangles and `+` indicating ascending, and black rectangles and `-` indicating descending orientation), and (*iv*) the range of element IDs for each block within its node and for its level of hierarchy. These four rows correspond to entries in the (*i*) *nodeori\**, (*ii*) *blockid\**, (*iii*) *blockori\**, and (*iv*) *elemS\** -- *elemE\** columns in the `$blocks` data frame. See the `summarizeBlocks()` function above for a description of the `$blocks` data frame (using chromosome 3R of *D. melanogaster* as an example), and `?genomeRearrPlot` for further details.
 
-The bottom part of each focal segment visualizes different classes of rearrangements in the matrices `$TLBS`, `$TLWS`, `$TLWC`, `$IV`, and `$IVsm` in `BLOCKS`. See the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript or the `?computeRearrs` documentation for more information on these classes of rearrangements. In contrast to the `genomeImagePlot()` function, the `genomeRearrPlot()` function allows to visualize rearrangements that are nested, and to distinguish between individual large rearrangements versus multiple short adjacent rearrangements.
+The bottom part of each focal segment visualizes different classes of rearrangements in the matrices `$NM1`, `$NM2`, `$SM`, `$IV`, and `$IVsm` in `BLOCKS`. See the description of the `rearrvisr` algorithm in the Supplementary information of the associated manuscript or the `?computeRearrs` documentation for more information on these classes of rearrangements. In contrast to the `genomeImagePlot()` function, the `genomeRearrPlot()` function allows to visualize rearrangements that are nested, and to distinguish between individual large rearrangements versus multiple short adjacent rearrangements.
 
-Horizontal lines that are at identical height denote the same rearrangement (potentially disrupted by inserted CARs). Green indicates blocks that are part of translocations between CARs between focal genome segments (`TLBS`); blue indicates blocks that are part of translocations between CARs within focal genome segments (`TLWS`); purple indicates blocks that are part of translocations within CARs within focal genome segments (`TLWC`); maroon indicates blocks that are part of inversions within CARs within focal genome segments (`IV`). Single-marker inversions (`IVsm`) are indicated by a short vertical line at their position within their block, while multi-marker inversions are indicated by a horizontal line spanning the contributing block(s). 
+Horizontal lines that are at identical height denote the same rearrangement (potentially disrupted by inserted CARs). Green indicates blocks that are part of class I nonsyntenic moves (`NM1`); blue indicates blocks that are part of class II nonsyntenic moves (`NM2`); purple indicates blocks that are part of syntenic moves (`SM`); maroon indicates blocks that are part of inversions (`IV`). Single-marker inversions (`IVsm`) are indicated by a short vertical line at their position within their block, while multi-marker inversions are indicated by a horizontal line spanning the contributing block(s). 
 
 Lighter coloration denotes smaller weights for rearrangement tags in the respective matrices in `BLOCKS`. Unless the argument `remThld` is set to a value smaller than that of `remWgt` in the `computeRearrs()` function, only lines for blocks that are less parsimonious to have changed position relative to alternative blocks are plotted. 
 
@@ -748,13 +748,13 @@ TOY24_compgenome[match(TOY24_focalgenome$marker,
                        TOY24_compgenome$marker), ]
 ```
 
-The alignment potentially disrupts the original sequence of *PQ-structure* elements (i.e., node element IDs) at one or more hierarchy levels (i.e., in columns *$car*, *$elem1*, *$elem2*, or *$elem3*). Such disruptions of the contiguity of aligned node element IDs indicate rearrangements. Each hierarchy level and each node is checked separately for rearrangements, starting at the CAR level and then descending through the hierarchy levels. The definition of a disrupted sequence of node element IDs differs among CARs, *P-nodes*, and *Q-nodes*. Briefly, for CARs and *P-nodes*, where children are in arbitrary order, the sequence of node element IDs does not need to be ordered, but the presence of *scattered elements* indicates a rearrangement (e.g., element `2` within the sequence `2 2 1 2 2 2` is *scattered* and indicates that the coherence of markers descending from child `2` is disrupted by markers descending from child `1`). For *Q-nodes*, the sequence of node element IDs needs to be ordered in either ascending or descending direction, any deviation from this (e.g., `3 1 2`) indicates a rearrangement (a translocation or an inversion).
+The alignment potentially disrupts the original sequence of *PQ-structure* elements (i.e., node element IDs) at one or more hierarchy levels (i.e., in columns *$car*, *$elem1*, *$elem2*, or *$elem3*). Such disruptions of the contiguity of aligned node element IDs indicate rearrangements. Each hierarchy level and each node is checked separately for rearrangements, starting at the CAR level and then descending through the hierarchy levels. The definition of a disrupted sequence of node element IDs differs among CARs, *P-nodes*, and *Q-nodes*. Briefly, for CARs and *P-nodes*, where children are in arbitrary order, the sequence of node element IDs does not need to be ordered, but the presence of *scattered elements* indicates a rearrangement (e.g., element `2` within the sequence `2 2 1 2 2 2` is *scattered* and indicates that the coherence of markers descending from child `2` is disrupted by markers descending from child `1`). For *Q-nodes*, the sequence of node element IDs needs to be ordered in either ascending or descending direction, any deviation from this (e.g., `3 1 2`) indicates a rearrangement (a syntenic move or an inversion).
 
 
 If markers are doubled, their *directionality* in the focal genome relative to the compared genome is taken into account for the detection and classification of rearrangements within *Q-nodes*. The directionality can be identical (then the strand in both genomes is either `"+"` or `"-"`) or inverted (then the strand is `"+"` in one genome but is `"-"` in the other). Note that if the hierarchically lowest node of a given marker in the corresponding *PQ-tree* does not contain any other branches or markers (a *single-marker* node), the directionality is irrelevant, as nodes can be reversed. The directionality is also irrelevant for the detection of rearrangements at the CAR level or for *P-nodes*.
 
 
-While markers part of an inversion can be unambiguously delimitated, translocations between sets of markers are only defined relative to each other (e.g., within the sequence `2 2 1 2 2 2`, the first two elements `2` may have been translocated from original positions two and three to new positions one and two, or element `1` may have been translocated from original position one to its new position three). In many cases it cannot be distinguished which component of a translocation (i.e., which set of elements) was causal to a detected rearrangement. This uncertainty is addressed by assigning different tag values to alternative translocation components based on the principle of parsimony, where larger values indicate elements that are more parsimonious to have been translocated.
+While markers part of an inversion can be unambiguously delimitated, syntenic moves between sets of markers are only defined relative to each other (e.g., within the sequence `2 2 1 2 2 2`, the first two elements `2` may have been moved from original positions two and three to new positions one and two, or element `1` may have been moved from original position one to its new position three). In many cases it cannot be distinguished which component of a syntenic move (i.e., which set of elements) was causal to a detected rearrangement. This uncertainty is addressed by assigning different tag values to alternative rearrangement components based on the principle of parsimony, where larger values indicate elements that are more parsimonious to have been moved.
 
 \newpage
 
@@ -762,13 +762,13 @@ While markers part of an inversion can be unambiguously delimitated, translocati
 knitr::include_graphics("Alignment.png")
 ```
 
-**Figure \ref{fig:toy24align}:** Alignment of the compared genome representation (i.e., *PQ-structure*) in `TOY24_compgenome` to the focal genome map in `TOY24_focalgenome`, and hierarchical subdivision of the aligned *PQ-structure* for rearrangement identification. **A**, graphical representation of the *PQ-structure* in `TOY24_compgenome` in its original order. *PQ-trees* of four CARs are shown in colors. *P-nodes* are illustrated with ovals and *Q-nodes* with rectangles. Marker IDs are given by black integers within pentagons at the leaves of the *PQ-trees*. All branches are labeled with a colored integer ID (i.e., the node element ID) according to their position at their node of origin, starting at `1` for each node and hierarchy level. **B**, graphical representation of the focal genome map in `TOY24_focalgenome`, ordered by map position. Markers are shown as pentagons, filled with different grays according to their focal segment (scaffolds I -- III) of origin. Black dashed lines show the alignment between the *PQ-structure* and the focal genome map. **C**, subdivision of the aligned *PQ-structure* by focal segments at CAR level (i.e., hierarchy level `1`). **D**, subdivision of the aligned *PQ-structure* by focal segments at node levels (i.e., hierarchy levels `2` -- `4`). Hierarchy levels are shown in rows. The colored integers within pentagons are node element IDs of the aligned *PQ-trees*. Asterisks indicate markers that have inverted directionality in the focal genome relative to the compared genome. Subdivisions (based on identical elements at higher hierarchy levels) are indicated by small vertical gaps between markers and connected to the preceding hierarchy by gray dashed lines. For the red CAR (CAR 2), the red dashed line indicates that node elements `1 2 3 3 3` are joined across the inserted marker from the blue CAR (CAR 1) for rearrangement detection at the node level. **E**, tags for rearranged markers. The green bar indicates a translocation between CARs between focal genome segments (`TLBS`); the blue bar indicates a translocation between CARs within focal genome segments (`TLWS`); purple bars indicate markers that are part of translocations within CARs within focal genome segments (`TLWC`); maroon bars indicate markers that are part of inversions within CARs within focal genome segments (`IV`). A single-marker inversion (`IVsm`) is indicated by a short vertical bar, while multi-marker inversions are indicated by horizontal bars. Lighter coloration for purple bars for markers `21` and `20` on scaffold III indicate half-weight tag values, as it cannot be distinguished which of the two is more parsimonious to have been translocated. Bars are only shown for tag values greater than `remWgt`.
+**Figure \ref{fig:toy24align}:** Alignment of the compared genome representation (i.e., *PQ-structure*) in `TOY24_compgenome` to the focal genome map in `TOY24_focalgenome`, and hierarchical subdivision of the aligned *PQ-structure* for rearrangement identification. **A**, graphical representation of the *PQ-structure* in `TOY24_compgenome` in its original order. *PQ-trees* of four CARs are shown in colors. *P-nodes* are illustrated with ovals and *Q-nodes* with rectangles. Marker IDs are given by black integers within pentagons at the leaves of the *PQ-trees*. All branches are labeled with a colored integer ID (i.e., the node element ID) according to their position at their node of origin, starting at `1` for each node and hierarchy level. **B**, graphical representation of the focal genome map in `TOY24_focalgenome`, ordered by map position. Markers are shown as pentagons, filled with different grays according to their focal segment (scaffolds I -- III) of origin. Black dashed lines show the alignment between the *PQ-structure* and the focal genome map. **C**, subdivision of the aligned *PQ-structure* by focal segments at CAR level (i.e., hierarchy level `1`). **D**, subdivision of the aligned *PQ-structure* by focal segments at node levels (i.e., hierarchy levels `2` -- `4`). Hierarchy levels are shown in rows. The colored integers within pentagons are node element IDs of the aligned *PQ-trees*. Asterisks indicate markers that have inverted directionality in the focal genome relative to the compared genome. Subdivisions (based on identical elements at higher hierarchy levels) are indicated by small vertical gaps between markers and connected to the preceding hierarchy by gray dashed lines. For the red CAR (CAR 2), the red dashed line indicates that node elements `1 2 3 3 3` are joined across the inserted marker from the blue CAR (CAR 1) for rearrangement detection at the node level. **E**, tags for rearranged markers. The green bar indicates a class I nonsyntenic move (`NM1`); the blue bar indicates a class II nonsyntenic move (`NM2`); purple bars indicate markers that are part of syntenic moves (`SM`); maroon bars indicate markers that are part of inversions (`IV`). A single-marker inversion (`IVsm`) is indicated by a short vertical bar, while multi-marker inversions are indicated by horizontal bars. Lighter coloration for purple bars for markers `21` and `20` on scaffold III indicate half-weight tag values, as it cannot be distinguished which of the two is more parsimonious to have been moved. Bars are only shown for tag values greater than `remWgt`.
 
 
 
-## Tranlocations between CARs between focal segments (`TLBS`)
+## Class I nonsyntenic moves (`NM1`)
 
-A CAR is identified as translocated if it was aligned to more than one focal genome segment in a way that is incompatible with a potentially incomplete focal genome assembly. Tests are performed by considering all focal genome segments jointly. The algorithm takes into account that for the focal genome, not all scaffolds may have been placed within a chromosome. Likewise, CARs are only assumed to be contiguous sets of genetic markers, but do not need to represent full (ancestral) chromosomes. For example, CAR 4 on scaffolds II and III in Figure \ref{fig:toy24align}C is not identified as `TLBS`, as the CAR can join the ends of the two scaffolds. By contrast, the fragments of CAR 1 were aligned to scaffolds I and II in a way that is incompatible with a potentially incomplete focal genome assembly (i.e., the smaller fragment is located in the middle of scaffold II), indicating a `TLBS`. (Note that for the case where a large fragment of a CAR is located in the middle of a scaffold, and a small fragment of the same CAR fully spans a small scaffold, a `TLBS` will not be assigned, as the small fragment might in fact be placed in a gap between contigs on the large genome segment.)
+A CAR is identified as rearranged by a class I nonsyntenic move if it was aligned to more than one focal genome segment in a way that is incompatible with a potentially incomplete focal genome assembly. Tests are performed by considering all focal genome segments jointly. The algorithm takes into account that for the focal genome, not all scaffolds may have been placed within a chromosome. Likewise, CARs are only assumed to be contiguous sets of genetic markers, but do not need to represent full (ancestral) chromosomes. For example, CAR 4 on scaffolds II and III in Figure \ref{fig:toy24align}C is not identified as `NM1`, as the CAR can join the ends of the two scaffolds. By contrast, the fragments of CAR 1 were aligned to scaffolds I and II in a way that is incompatible with a potentially incomplete focal genome assembly (i.e., the smaller fragment is located in the middle of scaffold II), indicating a `NM1`. (Note that for the case where a large fragment of a CAR is located in the middle of a scaffold, and a small fragment of the same CAR fully spans a small scaffold, a `NM1` will not be assigned, as the small fragment might in fact be placed in a gap between contigs on the large genome segment.)
 
 
 
@@ -800,37 +800,37 @@ SYNT <- computeRearrs(TOY24_focalgenome, TOY24_compgenome,
 ```
 
 \medskip
-```{r tlbs-TOY24}
-## TLBS identified in TOY24_focalgenome relative to 
+```{r nm1-TOY24}
+## NM1 identified in TOY24_focalgenome relative to 
 ## TOY24_compgenome
 
-SYNT$TLBS
+SYNT$NM1
 ```
 
-This shows that marker `3` was identified as `TLBS` (i.e., it has a tag value of `1`), as the marker is part of CAR 1 that was aligned to both scaffolds I and II (see Figure \ref{fig:toy24align}C). As the smaller fragment of CAR 1 is located in the middle of scaffold II, it cannot join with the other fragment of CAR 1 on scaffold I and thus must be involved in a rearrangement. By contrast, markers part of CAR 4 are not identified as `TLBS` (i.e., tag values are `0`), as the CAR can join the ends of scaffolds II and III.
+This shows that marker `3` was identified as `NM1` (i.e., it has a tag value of `1`), as the marker is part of CAR 1 that was aligned to both scaffolds I and II (see Figure \ref{fig:toy24align}C). As the smaller fragment of CAR 1 is located in the middle of scaffold II, it cannot join with the other fragment of CAR 1 on scaffold I and thus must be involved in a rearrangement. By contrast, markers part of CAR 4 are not identified as `NM1` (i.e., tag values are `0`), as the CAR can join the ends of scaffolds II and III.
 
 
 
-## Tranlocations between CARs within focal segments (`TLWS`)
+## Class II nonsyntenic moves (`NM2`)
 
-A CAR is identified as translocated if its contiguity within a focal genome segment is disrupted when aligned to the focal genome. Tests are performed separately for each focal genome segment. Again, CARs are only assumed to be contiguous sets of genetic markers, but do not need to represent full (ancestral) chromosomes. For example, CAR 3 and CAR 4 on scaffold II in Figure \ref{fig:toy24align}C are not identified as `TLWS`, as the CARs may be part of a larger contiguous block that was split into smaller CARs for technical reasons (i.e., analogous to small contigs that could not be joined to larger contigs in a genome assembly). By contrast, the contiguity of CAR 2 on scaffold II is disruped by a fragment of CAR 1, indicating a `TLWS`. 
+A CAR is identified as rearranged by a class II nonsyntenic move if its contiguity within a focal genome segment is disrupted when aligned to the focal genome. Tests are performed separately for each focal genome segment. Again, CARs are only assumed to be contiguous sets of genetic markers, but do not need to represent full (ancestral) chromosomes. For example, CAR 3 and CAR 4 on scaffold II in Figure \ref{fig:toy24align}C are not identified as `NM2`, as the CARs may be part of a larger contiguous block that was split into smaller CARs for technical reasons (i.e., analogous to small contigs that could not be joined to larger contigs in a genome assembly). By contrast, the contiguity of CAR 2 on scaffold II is disruped by a fragment of CAR 1, indicating a `NM2`. 
 
 
 \medskip
-```{r tlws-TOY24}
-## TLWS identified in TOY24_focalgenome relative to 
+```{r nm2-TOY24}
+## NM2 identified in TOY24_focalgenome relative to 
 ## TOY24_compgenome
 
-SYNT$TLWS
+SYNT$NM2
 ```
 
-This shows that marker `3` was identified as `TLWS` (i.e., it has a tag value of `1`), as it is part of CAR 1 that disrupts the contiguity of CAR 2 on scaffold II (see Figure \ref{fig:toy24align}C).
+This shows that marker `3` was identified as `NM2` (i.e., it has a tag value of `1`), as it is part of CAR 1 that disrupts the contiguity of CAR 2 on scaffold II (see Figure \ref{fig:toy24align}C).
 
 
 
-## Tranlocations (`TLWC`) or inversions (`IV`) within CARs
+## Syntenic moves (`SM`) or inversions (`IV`)
 
-A CAR is identified as translocated or inverted if its contiguity within itself is disrupted when aligned to a focal genome segment. Tests are performed separately for each focal genome segment. Starting at the hierarchically highest and then descending to the lowest nodes, tests are performed for each node separately and differ between *P-nodes* and *Q-nodes*. For example, in Figure \ref{fig:toy24align}D, only CAR 1 with a single node was aligned to scaffold I, thus only one test needs to be performed.
+A CAR is identified as rearranged by a syntenic move or an inversion if its contiguity within itself is disrupted when aligned to a focal genome segment. Tests are performed separately for each focal genome segment. Starting at the hierarchically highest and then descending to the lowest nodes, tests are performed for each node separately and differ between *P-nodes* and *Q-nodes*. For example, in Figure \ref{fig:toy24align}D, only CAR 1 with a single node was aligned to scaffold I, thus only one test needs to be performed.
 
 \medskip
 ```{r scaf1-TOY24}
@@ -844,13 +844,13 @@ TOY24_aligned$elem1[TOY24_aligned$scaff == "1" &
 This shows the order of elements in column *$elem1* is not consistent with a *Q-node*, indicating rearrangements (see Figure \ref{fig:toy24align}A, B, and D).
 
 \medskip
-```{r scaf1-TOY24-tlwc}
-## Translocations identified scaffold I
+```{r scaf1-TOY24-sm}
+## Syntenic moves identified on scaffold I
 
-SYNT$TLWC[TOY24_aligned$scaff == "1", , drop = FALSE]
+SYNT$SM[TOY24_aligned$scaff == "1", , drop = FALSE]
 ```
 
-This shows that one `TLWC` was identified that involves marker `7` (tagged with `0.95`, i.e., `1 - remWgt`) and the block of markers `2`, `6`, `5`, and `4` (tagged with `0.05`, i.e., `remWgt`). The larger tag value for marker `7` indicates that this element is more parsimonious to have been translocated (i.e., it is more parsimonious that marker `7` has moved to the left than that markers `2`, `4`, `5`, and `6` have moved to the right; see Figure \ref{fig:toy24align}A and B). The third column only contains zeros and is used for padding columns of other scaffolds.
+This shows that one `SM` was identified that involves marker `7` (tagged with `0.95`, i.e., `1 - remWgt`) and the block of markers `2`, `6`, `5`, and `4` (tagged with `0.05`, i.e., `remWgt`). The larger tag value for marker `7` indicates that this element is more parsimonious to have been rearranged (i.e., it is more parsimonious that marker `7` has moved to the left than that markers `2`, `4`, `5`, and `6` have moved to the right; see Figure \ref{fig:toy24align}A and B). The third column only contains zeros and is used for padding columns of other scaffolds.
 
 \medskip
 ```{r scaf1-TOY24-iv}
@@ -927,12 +927,12 @@ This shows that the order of elements in column *$elem2* is consistent with a *P
 ```{r scaf2-TOY24-rearr}
 ## Rearrangements identified on scaffold II
 
-SYNT$TLWC[TOY24_aligned$scaff == "2", , drop = FALSE]
+SYNT$SM[TOY24_aligned$scaff == "2", , drop = FALSE]
 
 SYNT$IV[TOY24_aligned$scaff == "2", , drop = FALSE]
 ```
 
-This shows that no `TLWC` and no `IV` was identified. Although markers `-13`, `-12`, and `-11` on scaffold II appear to be inverted relative to markers `11`, `12`, and `13` on CAR 2 (see Figure \ref{fig:toy24align}A and B), they are all on the same *Q-node*, where the order can be reversed. Similarly, markers `17`, `16`, and `15` on scaffold II appear to be rearranged relative to markers `15`, `16`, and `17` on CAR 4, but as they are on a *P-node*, their order is arbitrary.
+This shows that no `SM` and no `IV` was identified. Although markers `-13`, `-12`, and `-11` on scaffold II appear to be inverted relative to markers `11`, `12`, and `13` on CAR 2 (see Figure \ref{fig:toy24align}A and B), they are all on the same *Q-node*, where the order can be reversed. Similarly, markers `17`, `16`, and `15` on scaffold II appear to be rearranged relative to markers `15`, `16`, and `17` on CAR 4, but as they are on a *P-node*, their order is arbitrary.
 
 
 For scaffold III in Figure \ref{fig:toy24align}D, only the fragment of one CAR was aligned and needs to be tested. The fragment of CAR 4 on scaffold III has three nodes, thus at least three tests need to be performed.
@@ -981,7 +981,7 @@ TOY24_aligned$elem3[TOY24_aligned$scaff == "3" &
     TOY24_aligned$elem2 == 1 & TOY24_aligned$subnode == 0]
 ```
 
-This shows that exactly two branches descend from the first subnode of the *Q-node*, requiring special treatment for the detection and classification of rearrangements. In this specific example, one can (i) reverse the order of elements, not requiring a rearrangement, or (ii) not reversing the order, requiring a rearrangement. However when testing the next hierarchy level for rearrangements (in this particular case the test is for single-marker inversions, see below), two inversions are required for case (i), as a reversal of the order of elements implicates a reversal of their directionality, which is not realized (i.e., markers `20` and `21` are both on the `"+"` strand in either genome; see Figure \ref{fig:toy24align}A and B). For case (ii), no additional reversals are required. Thus, the order of the *Q-node* is not reversed, and a translocation is assigned.
+This shows that exactly two branches descend from the first subnode of the *Q-node*, requiring special treatment for the detection and classification of rearrangements. In this specific example, one can (i) reverse the order of elements, not requiring a rearrangement, or (ii) not reversing the order, requiring a rearrangement. However when testing the next hierarchy level for rearrangements (in this particular case the test is for single-marker inversions, see below), two inversions are required for case (i), as a reversal of the order of elements implicates a reversal of their directionality, which is not realized (i.e., markers `20` and `21` are both on the `"+"` strand in either genome; see Figure \ref{fig:toy24align}A and B). For case (ii), no additional reversals are required. Thus, the order of the *Q-node* is not reversed, and a syntenic move is assigned.
 
 \medskip
 ```{r scaf3-4-TOY24}
@@ -1012,13 +1012,13 @@ with a *Q-node*.
 
 
 \medskip
-```{r scaf3-TOY24-tlwc}
-## Translocations identified on scaffold III
+```{r scaf3-TOY24-sm}
+## Syntenic moves identified on scaffold III
 
-SYNT$TLWC[TOY24_aligned$scaff == "3", , drop = FALSE]
+SYNT$SM[TOY24_aligned$scaff == "3", , drop = FALSE]
 ```
 
-This shows that two `TLWC` were identified. The first is for marker `19` (tagged with `1`). The second involves markers `21` and `20` (both tagged with `0.5`). Having half-weight tags for either marker indicates that it cannot be distinguished which of the two elements is more parsimonious to have been translocated (i.e., whether it is more parsimonious that marker `21` has moved to the left or marker `20` has moved to the right; see Figure \ref{fig:toy24align}A and B).
+This shows that two `SM` were identified. The first is for marker `19` (tagged with `1`). The second involves markers `21` and `20` (both tagged with `0.5`). Having half-weight tags for either marker indicates that it cannot be distinguished which of the two elements is more parsimonious to have been rearranged (i.e., whether it is more parsimonious that marker `21` has moved to the left or marker `20` has moved to the right; see Figure \ref{fig:toy24align}A and B).
 
 \medskip
 ```{r scaf3-TOY24-iv}
@@ -1065,7 +1065,7 @@ genomeImagePlot(SYNT, TOY24_focalgenome,
 options(op)
 ```
 
-**Figure \ref{fig:image-plot-TOY24}:** The three focal genome segments are shown as separate panels. The x-axis gives the position of markers on their genome segments. Markers are indicated with short black ticks in the bottom row of each panel. Rearrangement breakpoints are indicated with red ticks and are drawn at the midpoints between the markers adjacent to the breakpoints. Markers part of different classes of rearrangements are highlighted in the upper four rows of each panel by colored ticks. From top to bottom: `TLBS` (green), `TLWS` (blue), `TLWC` (purple), and `IV` (maroon). Ticks are only shown for tag values greater than `remWgt`.
+**Figure \ref{fig:image-plot-TOY24}:** The three focal genome segments are shown as separate panels. The x-axis gives the position of markers on their genome segments. Markers are indicated with short black ticks in the bottom row of each panel. Rearrangement breakpoints are indicated with red ticks and are drawn at the midpoints between the markers adjacent to the breakpoints. Markers part of different classes of rearrangements are highlighted in the upper four rows of each panel by colored ticks. From top to bottom: `NM1` (green), `NM2` (blue), `SM` (purple), and `IV` (maroon). Ticks are only shown for tag values greater than `remWgt`.
 
 &nbsp;
 
@@ -1144,7 +1144,7 @@ options(op)
 ```
 
 
-**Figure \ref{fig:rearr-plot-TOY24}:** The three focal genome segments are shown as separate panels. Each synteny block is represented by a column along the x-axis. The top part of each panel shows information on the structure of each *PQ-tree* and its alignment to the focal genome, and the bottom part highlights blocks part of different classes of rearrangements by colored bars. Green, `TLBS`. Blue, `TLWS`. Purple, `TLWC`. Maroon, `IV` (with a horizontal bar for the multi-marker inversion, and a short vertical bar for the single-marker inversion). Lighter coloration for purple bars for scaffold III indicate half-weight tag values. Bars are only shown for tag values greater than `remWgt`. See `?genomeRearrPlot` for further details on the top part of the panels.
+**Figure \ref{fig:rearr-plot-TOY24}:** The three focal genome segments are shown as separate panels. Each synteny block is represented by a column along the x-axis. The top part of each panel shows information on the structure of each *PQ-tree* and its alignment to the focal genome, and the bottom part highlights blocks part of different classes of rearrangements by colored bars. Green, `NM1`. Blue, `NM2`. Purple, `SM`. Maroon, `IV` (with a horizontal bar for the multi-marker inversion, and a short vertical bar for the single-marker inversion). Lighter coloration for purple bars for scaffold III indicate half-weight tag values. Bars are only shown for tag values greater than `remWgt`. See `?genomeRearrPlot` for further details on the top part of the panels.
 
 &nbsp;
 

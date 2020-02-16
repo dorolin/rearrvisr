@@ -2,11 +2,11 @@
 #' rearrangements
 #'
 #' The rearrvisr package provides functions to identify and visualize inter- and
-#' intrachromosomal translocations and inversions between a focal genome and an
-#' ancestral genome reconstruction, or two extant genomes. Rearrangements,
-#' breakpoints, and synteny blocks are identified along the focal genome and
-#' output in a tabular format. Rearrangements and synteny blocks can be
-#' visualized along the focal genome by two graphical functions.
+#' intrachromosomal rearrangements between a focal genome and an ancestral
+#' genome reconstruction, or two extant genomes. Rearrangements, breakpoints,
+#' and synteny blocks are identified along the focal genome and output in a
+#' tabular format. Rearrangements and synteny blocks can be visualized along the
+#' focal genome by two graphical functions.
 #'
 #' @section Functions to convert and verify input files:
 #'
