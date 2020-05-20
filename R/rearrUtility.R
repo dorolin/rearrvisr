@@ -1588,10 +1588,14 @@ filterCars3<-function(SYNT,markers,tree,nhier,myscafs,mycars,TLL,
     if(ncol(TLL$TLbetween)==0){
         SYNT$NM1<-matrix(NA,ncol=0,nrow=nrow(markers))
         rownames(SYNT$NM1)<-rownames(TLL$TLbetween)
+        SYNT$NM1bS<-SYNT$NM1
+        SYNT$NM1bE<-SYNT$NM1
     }
     if(ncol(TLL$TLwithin)==0){
         SYNT$NM2<-matrix(NA,ncol=0,nrow=nrow(markers))
         rownames(SYNT$NM2)<-rownames(TLL$TLwithin)
+        SYNT$NM2bS<-SYNT$NM2
+        SYNT$NM2bE<-SYNT$NM2
     }
     if(ncol(TLL$TLbetween)==0 & ncol(TLL$TLwithin)==0){
         return(SYNT)
