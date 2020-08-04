@@ -124,8 +124,12 @@ getBreakpnts2BP<-function(bptS,bptE,startpos,endpos,remThld=0){
     brpts<-rbind(brptsS,brptsE,tmp)
     brpts<-brpts[order(brpts[,1],brpts[,2]),]
 
+    if(!is.matrix(brpts)){
+        brpts<-t(as.matrix(brpts))
+    }
+
     ## get midpoint in base pairs
-    brpts<-data.frame(bptmid=apply(brpts[,1:2],1,mean),
+    brpts<-data.frame(bptmid=apply(brpts[,1:2,drop=FALSE],1,mean),
                       bptmin=brpts[,1],bptmax=brpts[,2],maxtagval=brpts[,3])
 
     return(brpts)
